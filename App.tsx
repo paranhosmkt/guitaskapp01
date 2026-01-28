@@ -34,13 +34,10 @@ const App: React.FC = () => {
   const [timerMode, setTimerMode] = useState<'work' | 'break'>('work');
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- 1. Verificação e Real-time do Status Pro ---
   useEffect(() => {
     if (!session?.user?.id || !SUPABASE_IS_CONFIGURED) return;
 
-    // Função para buscar o status inicial
     const checkProStatus = async () => {
       const { data, error } = await supabase
         .from('profiles')
@@ -55,7 +52,6 @@ const App: React.FC = () => {
 
     checkProStatus();
 
-    // Inscrição em tempo real para mudanças no perfil
     const profileSubscription = supabase
       .channel(`profile_${session.user.id}`)
       .on('postgres_changes', {
@@ -77,7 +73,6 @@ const App: React.FC = () => {
     };
   }, [session]);
 
-  // --- Auth Logic ---
   useEffect(() => {
     const initAuth = async () => {
       try {
@@ -96,9 +91,7 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // --- Handlers ---
   const handleStripeCheckout = () => {
-    // Apenas abre o link. O Real-time acima cuidará da ativação assim que o webhook disparar.
     window.open(STRIPE_LINK, '_blank');
     setActiveModal(null);
   };
@@ -136,9 +129,8 @@ const App: React.FC = () => {
   const isDark = theme === 'dark';
 
   return (
-    <div className={`min-h-screen pb-20 md:pb-0 md:pl-64 flex flex-col transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      {/* Sidebar */}
-      <nav className={`fixed bottom-0 left-0 w-full h-16 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:w-64 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl`}>
+    <div className={`min-h-screen pb-24 md:pb-0 md:pl-64 flex flex-col transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:w-64 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl`}>
         <div className="hidden md:flex flex-col items-start gap-10 mb-10 w-full">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg mt-1"><Zap size={22} fill="currentColor" /></div>
@@ -166,17 +158,24 @@ const App: React.FC = () => {
             </button>
           </div>
         </div>
+        {/* Mobile Nav Icons (Visual Only for reference) */}
+        <div className="flex md:hidden items-center justify-around w-full h-full px-4">
+           <button onClick={() => setView('global')} className={`p-2 rounded-xl ${view === 'global' ? 'text-indigo-600' : 'text-slate-400'}`}><LayoutDashboard size={24} /></button>
+           <button onClick={() => setView('local')} className={`p-2 rounded-xl ${view === 'local' ? 'text-indigo-600' : 'text-slate-400'}`}><Target size={24} /></button>
+           <button onClick={() => setActiveModal('macro')} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
+           <button onClick={() => setView('rewards')} className={`p-2 rounded-xl ${view === 'rewards' ? 'text-indigo-600' : 'text-slate-400'}`}><Trophy size={24} /></button>
+           <button onClick={() => setActiveModal('upgrade')} className={`p-2 rounded-xl ${isPro ? 'text-amber-500' : 'text-slate-400'}`}><Crown size={24} /></button>
+        </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-10 w-full max-w-[1200px] mx-auto pt-16">
+      <main className="flex-1 p-4 md:p-10 w-full max-w-[1200px] mx-auto pt-10">
         <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h2 className="text-3xl font-black">{view === 'global' ? 'Visão Geral' : view === 'local' ? 'Foco Local' : 'Recompensas'}</h2>
-            <p className="text-sm font-medium opacity-50 italic">Logado como: {session.user.email}</p>
+            <p className="text-sm font-medium opacity-50 italic">Foco total no agora.</p>
           </div>
           {view === 'global' && (
-            <button onClick={() => setActiveModal('macro')} className="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+            <button onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
               <Plus size={20} /> Novo Objetivo
             </button>
           )}
@@ -194,6 +193,12 @@ const App: React.FC = () => {
                 </div>
               </div>
             ))}
+            {tasks.filter(t => !t.completed).length === 0 && (
+              <div className="col-span-full py-20 flex flex-col items-center justify-center opacity-40 text-center">
+                 <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4"><CheckCircle2 size={32} /></div>
+                 <p className="font-bold">Nada pendente.<br/>Que tal um novo objetivo?</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -209,6 +214,22 @@ const App: React.FC = () => {
              </div>
           </div>
         )}
+
+        {view === 'rewards' && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+             <div className="col-span-full p-8 rounded-[3rem] bg-indigo-600 text-white flex items-center justify-between overflow-hidden relative shadow-2xl">
+                <div>
+                   <h3 className="text-3xl font-black">Loja de Foco</h3>
+                   <p className="text-indigo-100 font-bold opacity-80">Gaste seus pontos com sabedoria.</p>
+                </div>
+                <div className="text-right z-10">
+                   <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Seu Saldo</p>
+                   <p className="text-5xl font-black flex items-center gap-2 justify-end">{stats.points} <Star size={32} fill="currentColor" /></p>
+                </div>
+                <Zap className="absolute -right-8 -bottom-8 w-48 h-48 opacity-10 rotate-12" />
+             </div>
+          </div>
+        )}
       </main>
 
       {/* Modals */}
@@ -220,7 +241,6 @@ const App: React.FC = () => {
             </div>
             <ul className="space-y-3 text-sm font-medium">
               <li className="flex items-center gap-3"><Check className="text-emerald-500" size={16} /> Backup automático na nuvem</li>
-              <li className="flex items-center gap-3"><Check className="text-emerald-500" size={16} /> Estratégias de IA ilimitadas</li>
               <li className="flex items-center gap-3"><Check className="text-emerald-500" size={16} /> Histórico de produtividade</li>
             </ul>
             <button onClick={handleStripeCheckout} className="w-full py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] transition-all">
@@ -233,8 +253,8 @@ const App: React.FC = () => {
       {activeModal === 'macro' && (
         <Modal title="Novo Objetivo" onClose={() => setActiveModal(null)} isDark={isDark}>
            <div className="space-y-4">
-              <input autoFocus value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="O que vamos conquistar?" className={`w-full p-4 border rounded-2xl font-bold outline-none ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`} />
-              <button onClick={handleCreateMacro} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg">Começar Estratégia</button>
+              <input autoFocus value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="O que vamos conquistar?" className={`w-full p-4 border rounded-2xl font-bold outline-none focus:border-indigo-500 transition-all ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`} />
+              <button onClick={handleCreateMacro} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-lg hover:bg-indigo-700 active:scale-95 transition-all">Começar Estratégia</button>
            </div>
         </Modal>
       )}
@@ -268,40 +288,138 @@ const AuthScreen = ({ theme }: { theme: string }) => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      alert("Erro no Google Login: " + err.message);
+    }
+  };
+
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
-      <div className={`w-full max-w-sm p-10 rounded-[3rem] shadow-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-        <div className="flex flex-col items-center mb-10">
-          <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl mb-4"><Zap size={32} fill="currentColor" /></div>
-          <h2 className="text-3xl font-black tracking-tighter">GUITASK</h2>
-          {!SUPABASE_IS_CONFIGURED && <p className="text-[10px] font-black text-amber-500 uppercase mt-1">Modo Demonstração</p>}
+    <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
+      <div className={`w-full max-w-[400px] overflow-hidden rounded-[3rem] shadow-2xl border transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+        
+        {/* Header Section */}
+        <div className="p-8 pb-4 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl mb-4 group hover:rotate-12 transition-transform duration-300">
+            <Zap size={32} fill="currentColor" />
+          </div>
+          <h2 className="text-3xl font-black tracking-tighter leading-none mb-1">GUITASK</h2>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Neurodivergent Focus</p>
+          {!SUPABASE_IS_CONFIGURED && (
+             <div className="mt-4 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <p className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase">Modo Demonstração</p>
+             </div>
+          )}
         </div>
-        <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-8">
-          <button onClick={() => setMode('login')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all ${mode === 'login' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500'}`}>Entrar</button>
-          <button onClick={() => setMode('signup')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500'}`}>Criar</button>
-        </div>
-        <form onSubmit={handleAuth} className="space-y-4">
-          <input type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} required className={`w-full p-4 rounded-2xl border-2 font-bold outline-none focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`} />
-          <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} required className={`w-full p-4 rounded-2xl border-2 font-bold outline-none focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`} />
-          <button type="submit" disabled={loading} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl flex items-center justify-center gap-2">
-            {loading ? '...' : (mode === 'login' ? 'Entrar' : 'Cadastrar')}
+
+        {/* Content Section */}
+        <div className="px-8 pb-10 space-y-6">
+          
+          {/* Social Auth */}
+          <button 
+            onClick={handleGoogleLogin}
+            className={`w-full py-4 flex items-center justify-center gap-3 rounded-2xl border-2 font-black text-sm transition-all hover:scale-[1.02] active:scale-95 ${isDark ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+            Entrar com Google
           </button>
-        </form>
+
+          {/* Divider */}
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
+            <div className="relative flex justify-center text-[10px] uppercase font-black"><span className={`px-4 text-slate-400 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>Ou use seu e-mail</span></div>
+          </div>
+
+          {/* Mode Switcher */}
+          <div className="flex p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-2xl">
+            <button 
+              onClick={() => setMode('login')} 
+              className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Entrar
+            </button>
+            <button 
+              onClick={() => setMode('signup')} 
+              className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              Criar Conta
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleAuth} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-2">E-mail</label>
+              <input 
+                type="email" 
+                placeholder="exemplo@email.com" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                required 
+                className={`w-full p-4 rounded-2xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-2">Senha</label>
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                className={`w-full p-4 rounded-2xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} 
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className={`w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {loading ? (
+                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  {mode === 'login' ? <LogIn size={20} /> : <UserPlus size={20} />}
+                  <span>{mode === 'login' ? 'Acessar Guitask' : 'Começar Gratuitamente'}</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {mode === 'login' && (
+            <p className="text-center text-[10px] font-bold text-slate-400 mt-2">
+              Esqueceu sua senha? <button className="text-indigo-500 hover:underline">Recuperar</button>
+            </p>
+          )}
+        </div>
       </div>
+      
+      <p className="mt-8 text-[11px] font-medium text-slate-400 text-center max-w-[300px] leading-relaxed">
+        Ao continuar, você concorda com nossos <span className="text-slate-500 font-bold underline cursor-pointer">Termos de Uso</span> e <span className="text-slate-500 font-bold underline cursor-pointer">Privacidade</span>.
+      </p>
     </div>
   );
 };
 
 const NavItem = ({ active, onClick, icon, label, isDark }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-3 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-400 bg-indigo-950/30' : 'text-indigo-600 bg-indigo-50') : 'text-slate-400 hover:bg-slate-100'}`}>
-    {icon} <span className="text-sm uppercase font-bold tracking-tight">{label}</span>
+  <button onClick={onClick} className={`flex items-center gap-4 w-full px-4 py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-400 bg-indigo-950/30' : 'text-indigo-600 bg-indigo-50') : 'text-slate-400 hover:bg-slate-100'}`}>
+    {icon} <span className="text-sm uppercase font-black tracking-tight">{label}</span>
   </button>
 );
 
 const Modal = ({ title, onClose, children, isDark }: any) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-    <div className={`relative w-full max-w-sm rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-      <button onClick={onClose} className="absolute right-8 top-8 opacity-40 hover:opacity-100"><X size={24} /></button>
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md transition-all duration-300">
+    <div className={`relative w-full max-w-sm rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 fade-in duration-300 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+      <button onClick={onClose} className="absolute right-8 top-8 text-slate-400 hover:text-slate-600 hover:rotate-90 transition-all"><X size={24} /></button>
       <h3 className="text-2xl font-black mb-8 tracking-tighter">{title}</h3>
       {children}
     </div>

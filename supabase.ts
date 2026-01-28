@@ -15,14 +15,12 @@ const supabaseKey = (process.env as any).SUPABASE_ANON_KEY || 'placeholder';
 
 /**
  * Se o Supabase não estiver configurado, exportamos um mock seguro.
- * Isso evita que o aplicativo quebre com erros de rede ao tentar acessar uma URL inválida.
  */
 export const supabase = isConfigured 
   ? createClient(supabaseUrl, supabaseKey)
   : {
       auth: {
         getSession: async () => {
-          // Pequeno delay para simular rede
           await new Promise(r => setTimeout(r, 500));
           return { data: { session: null }, error: null };
         },
@@ -31,11 +29,14 @@ export const supabase = isConfigured
         }),
         signInWithPassword: async ({ email }: any) => {
           console.warn("Supabase não configurado. Usando modo de demonstração.");
-          // Simula login de demo
           return { 
             data: { user: { email, id: 'demo-user' }, session: { user: { email, id: 'demo-user' } } }, 
             error: null 
           };
+        },
+        signInWithOAuth: async ({ provider }: any) => {
+          alert(`Login com ${provider} simulado (Supabase não configurado)`);
+          return { data: {}, error: null };
         },
         signUp: async () => ({ error: new Error("O cadastro requer um projeto Supabase configurado.") }),
         signOut: async () => {},
