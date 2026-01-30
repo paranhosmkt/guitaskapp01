@@ -5,13 +5,13 @@ import { createClient } from '@supabase/supabase-js';
  * Verifica se as variáveis de ambiente foram preenchidas e não são os placeholders.
  */
 const isConfigured = 
-  (process.env as any).SUPABASE_URL && 
-  (process.env as any).SUPABASE_ANON_KEY && 
-  !(process.env as any).SUPABASE_URL.includes('seu-projeto') &&
-  !(process.env as any).SUPABASE_URL.includes('placeholder');
+  process.env.SUPABASE_URL && 
+  process.env.SUPABASE_ANON_KEY && 
+  !process.env.SUPABASE_URL.includes('seu-projeto') &&
+  !process.env.SUPABASE_URL.includes('placeholder');
 
-const supabaseUrl = (process.env as any).SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey = (process.env as any).SUPABASE_ANON_KEY || 'placeholder';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'placeholder';
 
 /**
  * Se o Supabase não estiver configurado, exportamos um mock seguro.
@@ -43,4 +43,4 @@ export const supabase = isConfigured
       }
     } as any;
 
-export const SUPABASE_IS_CONFIGURED = isConfigured;
+export const SUPABASE_IS_CONFIGURED = !!isConfigured;

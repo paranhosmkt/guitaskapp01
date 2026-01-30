@@ -418,13 +418,6 @@ const AuthScreen = ({ theme }: { theme: string }) => {
     } catch (err: any) { alert(err.message); } finally { setLoading(false); }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
-      if (error) throw error;
-    } catch (err: any) { alert("Erro no Google Login: " + err.message); }
-  };
-
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
       <div className={`w-full max-w-[400px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
@@ -437,28 +430,30 @@ const AuthScreen = ({ theme }: { theme: string }) => {
         </div>
 
         <div className="px-10 pb-12 space-y-6">
-          <button onClick={handleGoogleLogin} className={`w-full py-5 flex items-center justify-center gap-3 rounded-2xl border-2 font-black text-sm transition-all hover:scale-[1.02] active:scale-95 ${isDark ? 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-white' : 'bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50 shadow-sm'}`}>
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-            Entrar com Google
-          </button>
-
-          <div className="relative py-2">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-700"></div></div>
-            <div className="relative flex justify-center text-[10px] uppercase font-black"><span className={`px-4 text-slate-400 ${isDark ? 'bg-slate-900' : 'bg-white'}`}>Ou use seu e-mail</span></div>
-          </div>
-
           <div className="flex p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-2xl">
             <button onClick={() => setMode('login')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>Entrar</button>
             <button onClick={() => setMode('signup')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>Criar</button>
           </div>
 
           <form onSubmit={handleAuth} className="space-y-4">
-            <input type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} required className={`w-full p-5 rounded-2xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} />
-            <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} required className={`w-full p-5 rounded-2xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} />
-            <button type="submit" disabled={loading} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-4">E-mail</label>
+              <input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-4">Senha</label>
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} />
+            </div>
+            <button type="submit" disabled={loading} className="w-full py-5 mt-2 bg-indigo-600 text-white rounded-[2rem] font-black shadow-xl flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all">
               {loading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : (mode === 'login' ? 'Acessar Guitask' : 'Começar Gratuitamente')}
             </button>
           </form>
+
+          {mode === 'login' && (
+            <p className="text-center text-[10px] font-bold text-slate-400 mt-2">
+              Problemas com o acesso? <button className="text-indigo-500 hover:underline">Recuperar senha</button>
+            </p>
+          )}
         </div>
       </div>
       <p className="mt-8 text-[11px] font-medium text-slate-400 text-center max-w-[300px] leading-relaxed">Foco é uma habilidade, não um dom. <br/> Estamos aqui para ajudar.</p>
