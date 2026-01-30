@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -12,391 +12,32 @@ const STORAGE_KEYS = {
   REWARDS: 'guiflow_rewards_v3',
   STATS: 'guiflow_stats_v3',
   THEME: 'guiflow_theme_v3',
-  MONTHLY_GOALS: 'guiflow_monthly_goals_v3'
+  MONTHLY_GOALS: 'guiflow_monthly_goals_v3',
+  GUEST_SESSION: 'guiflow_guest_session',
+  TIMER_SETTINGS: 'guiflow_timer_settings',
+  VIEW_PREFERENCE: 'guiflow_view_pref'
 };
 
 const STRIPE_LINK = 'https://buy.stripe.com/8x214o14E0FB8TF5NNcEw00';
 
-const App: React.FC = () => {
-  const [session, setSession] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [isPro, setIsPro] = useState(false);
+// Fixed: Moving helper components to the top to avoid "used before declaration" errors
+const NavItem = ({ active, onClick, icon, label, isDark }: any) => (
+  <button onClick={onClick} className={`flex items-center gap-4 w-full px-5 py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-300 bg-indigo-950/40 shadow-inner' : 'text-indigo-600 bg-indigo-50 shadow-sm') : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+    {icon} <span className="text-sm uppercase font-black tracking-tight">{label}</span>
+  </button>
+);
 
-  const [tasks, setTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.TASKS) || '[]'));
-  const [completedTasks, setCompletedTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPLETED_TASKS) || '[]'));
-  const [rewards, setRewards] = useState<Reward[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.REWARDS) || '[]'));
-  const [stats, setStats] = useState<UserStats>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.STATS) || '{"points":0,"tasksCompleted":0,"streak":1}'));
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem(STORAGE_KEYS.THEME) as 'light' | 'dark') || 'light');
-  const [view, setView] = useState<'global' | 'local' | 'rewards' | 'history'>('global');
-  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
-  const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newSubTaskTitle, setNewSubTaskTitle] = useState("");
-
-  // Persistência local
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
-    localStorage.setItem(STORAGE_KEYS.COMPLETED_TASKS, JSON.stringify(completedTasks));
-    localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
-  }, [tasks, completedTasks, stats]);
-
-  useEffect(() => {
-    if (!session?.user?.id || !SUPABASE_IS_CONFIGURED) return;
-
-    const checkProStatus = async () => {
-      const { data } = await supabase.from('profiles').select('is_pro').eq('id', session.user.id).single();
-      if (data?.is_pro) setIsPro(true);
-    };
-
-    checkProStatus();
-
-    const profileSubscription = supabase
-      .channel(`profile_${session.user.id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${session.user.id}` }, (payload: any) => {
-        if (payload.new.is_pro) {
-          setIsPro(true);
-          confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        }
-      }).subscribe();
-
-    return () => { supabase.removeChannel(profileSubscription); };
-  }, [session]);
-
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        setSession(currentSession);
-      } catch (err) {
-        console.error("Auth init error:", err);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    initAuth();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, newSession: any) => {
-      setSession(newSession);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setIsPro(false);
-  };
-
-  const handleCreateMacro = () => {
-    if (!newTaskTitle.trim()) return;
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle,
-      description: "",
-      priority: 'medium',
-      status: 'todo',
-      dueDate: new Date().toISOString().split('T')[0],
-      estimatedTime: 30,
-      category: 'Geral',
-      completed: false,
-      subTasks: [],
-      rewardPoints: 100,
-      links: []
-    };
-    setTasks([...tasks, newTask]);
-    setNewTaskTitle(""); setActiveModal(null);
-    setActiveTaskId(newTask.id);
-    setView('local');
-  };
-
-  const handleAddSubTask = () => {
-    if (!newSubTaskTitle.trim() || !activeTaskId) return;
-    const sub: SubTask = {
-      id: Date.now().toString(),
-      title: newSubTaskTitle,
-      completed: false,
-      status: 'todo',
-      rewardPoints: 10
-    };
-    setTasks(tasks.map(t => t.id === activeTaskId ? { ...t, subTasks: [...t.subTasks, sub] } : t));
-    setNewSubTaskTitle("");
-  };
-
-  const toggleSubTask = (subId: string) => {
-    if (!activeTaskId) return;
-    
-    let subWasCompleted = false;
-
-    const updatedTasks = tasks.map(t => {
-      if (t.id === activeTaskId) {
-        const updatedSubs = t.subTasks.map(s => {
-          if (s.id === subId) {
-            subWasCompleted = !s.completed;
-            return { ...s, completed: !s.completed };
-          }
-          return s;
-        });
-        return { ...t, subTasks: updatedSubs };
-      }
-      return t;
-    });
-
-    setTasks(updatedTasks);
-
-    if (subWasCompleted) {
-      setStats(prev => ({ ...prev, points: prev.points + 10 }));
-      confetti({
-        particleCount: 40,
-        spread: 50,
-        origin: { y: 0.8 },
-        colors: ['#6366f1', '#a855f7']
-      });
-    }
-  };
-
-  const completeMacroTask = () => {
-    if (!activeTaskId) return;
-    const task = tasks.find(t => t.id === activeTaskId);
-    if (!task) return;
-
-    setCompletedTasks([...completedTasks, { ...task, completed: true, completedAt: new Date().toISOString() }]);
-    setTasks(tasks.filter(t => t.id !== activeTaskId));
-    setStats(prev => ({ ...prev, points: prev.points + task.rewardPoints, tasksCompleted: prev.tasksCompleted + 1 }));
-    
-    confetti({
-      particleCount: 200,
-      spread: 90,
-      origin: { y: 0.5 },
-      scalar: 1.2,
-      gravity: 0.8
-    });
-
-    setActiveTaskId(null);
-    setView('global');
-  };
-
-  const activeTask = tasks.find(t => t.id === activeTaskId) || null;
-  const isDark = theme === 'dark';
-
-  const progress = useMemo(() => {
-    if (!activeTask || activeTask.subTasks.length === 0) return 0;
-    const completed = activeTask.subTasks.filter(s => s.completed).length;
-    return Math.round((completed / activeTask.subTasks.length) * 100);
-  }, [activeTask]);
-
-  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Zap className="text-indigo-600 animate-bounce" size={48} /></div>;
-  if (!session) return <AuthScreen theme={theme} />;
-
-  return (
-    <div className={`min-h-screen pb-24 md:pb-0 md:pl-64 flex flex-col transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:w-64 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl`}>
-        <div className="hidden md:flex flex-col items-start gap-10 mb-10 w-full">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg mt-1"><Zap size={22} fill="currentColor" /></div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-xl font-black tracking-tighter leading-none">GUITASK</h1>
-                {isPro && <span className="text-[8px] font-black uppercase tracking-widest bg-amber-400 text-slate-900 px-1.5 py-0.5 rounded-md border border-amber-500 flex items-center gap-1"><Crown size={8} /> Pro</span>}
-              </div>
-              <p className="text-[10px] font-bold text-slate-500 mt-1">Foco e Estratégia</p>
-            </div>
-          </div>
-          <div className="w-full space-y-2">
-            <NavItem active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
-            <NavItem active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
-            <NavItem active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
-          </div>
-          <div className="w-full mt-auto space-y-2">
-            {!isPro && (
-              <button onClick={() => setActiveModal('upgrade')} className="w-full p-4 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg">
-                <Crown size={16} /> Ser Pro
-              </button>
-            )}
-            <button onClick={handleLogout} className="w-full p-4 rounded-2xl border border-rose-100 bg-rose-50 text-rose-500 font-black text-xs uppercase flex items-center justify-center gap-2">
-              <LogOut size={16} /> Sair
-            </button>
-          </div>
-        </div>
-        <div className="flex md:hidden items-center justify-around w-full h-full px-4">
-           <button onClick={() => setView('global')} className={`p-2 rounded-xl ${view === 'global' ? 'text-indigo-600' : 'text-slate-400'}`}><LayoutDashboard size={24} /></button>
-           <button onClick={() => setView('local')} className={`p-2 rounded-xl ${view === 'local' ? 'text-indigo-600' : 'text-slate-400'}`}><Target size={24} /></button>
-           <button onClick={() => setActiveModal('macro')} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
-           <button onClick={() => setView('rewards')} className={`p-2 rounded-xl ${view === 'rewards' ? 'text-indigo-600' : 'text-slate-400'}`}><Trophy size={24} /></button>
-           <button onClick={handleLogout} className="p-2 rounded-xl text-rose-400"><LogOut size={24} /></button>
-        </div>
-      </nav>
-
-      <main className="flex-1 p-4 md:p-10 w-full max-w-[1200px] mx-auto pt-10">
-        {view === 'global' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <h2 className="text-4xl font-black tracking-tight">Estratégia Global</h2>
-                <p className="text-sm font-medium opacity-50 italic">Visualize o destino, não apenas os passos.</p>
-              </div>
-              <button onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
-                <Plus size={20} /> Novo Objetivo
-              </button>
-            </header>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {tasks.map(task => {
-                 const taskProgress = task.subTasks.length > 0 ? Math.round((task.subTasks.filter(s => s.completed).length / task.subTasks.length) * 100) : 0;
-                 return (
-                  <div key={task.id} onClick={() => { setActiveTaskId(task.id); setView('local'); }} className={`p-8 rounded-[3.5rem] border-2 transition-all cursor-pointer shadow-sm group flex flex-col justify-between h-80 hover:translate-y-[-4px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-50 hover:border-indigo-100'}`}>
-                    <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-[10px] font-black px-2 py-1 bg-indigo-100 text-indigo-600 rounded-full uppercase">{task.category}</span>
-                        {taskProgress === 100 && <Star size={14} className="text-amber-500" fill="currentColor" />}
-                      </div>
-                      <h3 className="text-2xl font-black leading-tight group-hover:text-indigo-500 transition-colors">{task.title}</h3>
-                    </div>
-                    <div className="mt-auto space-y-4">
-                       <div className="flex items-center justify-between text-[10px] font-black uppercase opacity-40">
-                          <span>Progresso</span>
-                          <span>{taskProgress}%</span>
-                       </div>
-                       <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                          <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${taskProgress}%` }} />
-                       </div>
-                    </div>
-                  </div>
-                 );
-              })}
-              {tasks.length === 0 && (
-                <div className="col-span-full py-32 flex flex-col items-center justify-center text-center">
-                   <div className="w-24 h-24 bg-slate-100 dark:bg-slate-900 rounded-[2rem] flex items-center justify-center mb-6 text-slate-300"><LayoutDashboard size={40} /></div>
-                   <h3 className="text-xl font-black mb-2">Tudo limpo no horizonte.</h3>
-                   <p className="text-sm font-medium opacity-40">Qual o próximo grande objetivo?</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {view === 'local' && activeTask && (
-          <div className="max-w-3xl mx-auto animate-in fade-in zoom-in-95 duration-500">
-             <button onClick={() => setView('global')} className="text-xs font-black uppercase text-indigo-500 mb-6 flex items-center gap-2 hover:translate-x-[-4px] transition-transform"><ArrowLeft size={14} /> Voltar para Visão Global</button>
-             
-             <div className={`p-10 rounded-[4rem] shadow-2xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-50'}`}>
-                <div className="flex items-start justify-between mb-8">
-                   <div>
-                      <h2 className="text-4xl font-black mb-2 tracking-tight">{activeTask.title}</h2>
-                      <p className="text-sm font-medium opacity-50">Quebre em pedaços pequenos para não cansar o cérebro.</p>
-                   </div>
-                   <div className="text-right">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1">Recompensa</p>
-                      <div className="flex items-center gap-1.5 font-black text-2xl text-amber-500">
-                         {activeTask.rewardPoints} <Star size={24} fill="currentColor" />
-                      </div>
-                   </div>
-                </div>
-
-                <div className="mb-10 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 flex items-center gap-4">
-                   <input 
-                      value={newSubTaskTitle} 
-                      onChange={e => setNewSubTaskTitle(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleAddSubTask()}
-                      placeholder="Adicionar micro-passo..." 
-                      className={`flex-1 bg-transparent font-bold outline-none text-lg ${isDark ? 'placeholder:text-slate-600' : 'placeholder:text-slate-300'}`} 
-                   />
-                   <button onClick={handleAddSubTask} className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-all"><Plus size={24} /></button>
-                </div>
-
-                <div className="space-y-4">
-                   {activeTask.subTasks.map(sub => (
-                      <div key={sub.id} className={`group p-5 rounded-3xl flex items-center gap-4 border-2 transition-all ${sub.completed ? 'opacity-40 bg-slate-50 border-transparent' : 'bg-white dark:bg-slate-800 border-slate-50 dark:border-slate-700 hover:border-indigo-200'}`}>
-                         <button 
-                            onClick={() => toggleSubTask(sub.id)}
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${sub.completed ? 'bg-emerald-500 text-white scale-90' : 'bg-slate-100 dark:bg-slate-700 text-transparent hover:text-indigo-600 hover:bg-indigo-50'}`}
-                         >
-                            <Check size={20} />
-                         </button>
-                         <span className={`flex-1 font-bold text-lg ${sub.completed ? 'line-through' : ''}`}>{sub.title}</span>
-                      </div>
-                   ))}
-                   {activeTask.subTasks.length === 0 && (
-                      <div className="py-10 text-center opacity-30 italic font-medium">Nenhum micro-passo ainda. Vamos começar?</div>
-                   )}
-                </div>
-
-                {progress === 100 && activeTask.subTasks.length > 0 && (
-                   <button onClick={completeMacroTask} className="mt-12 w-full py-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-[2rem] font-black text-xl shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-3 group">
-                      <CheckCircle size={28} /> CONCLUIR OBJETIVO
-                   </button>
-                )}
-             </div>
-          </div>
-        )}
-
-        {view === 'rewards' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
-             <div className="col-span-full p-12 rounded-[4rem] bg-indigo-600 text-white flex flex-col md:flex-row items-center justify-between overflow-hidden relative shadow-2xl mb-6">
-                <div className="z-10 text-center md:text-left">
-                   <h3 className="text-5xl font-black mb-2">Loja de Foco</h3>
-                   <p className="text-xl text-indigo-100 font-bold opacity-80">Você trabalhou duro. Hora de se presentear.</p>
-                </div>
-                <div className="text-center md:text-right z-10 mt-8 md:mt-0">
-                   <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60 mb-2">Seu Saldo Disponível</p>
-                   <p className="text-7xl font-black flex items-center gap-4 justify-center md:justify-end">{stats.points} <Star size={50} fill="currentColor" /></p>
-                </div>
-                <Zap className="absolute -right-12 -bottom-12 w-64 h-64 opacity-10 rotate-12" />
-             </div>
-             
-             <div className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-50'}`}>
-                <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center"><Coffee size={36} /></div>
-                <div className="flex-1">
-                   <h4 className="text-xl font-black">Pausa para Café</h4>
-                   <p className="text-sm font-bold opacity-40">15 min de descanso total.</p>
-                </div>
-                <div className="text-right">
-                   <button className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">50 pts</button>
-                </div>
-             </div>
-
-             <div className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-50'}`}>
-                <div className="w-20 h-20 bg-indigo-100 text-indigo-600 rounded-3xl flex items-center justify-center"><Play size={36} /></div>
-                <div className="flex-1">
-                   <h4 className="text-xl font-black">Episódio de Série</h4>
-                   <p className="text-sm font-bold opacity-40">Recompensa de alto valor.</p>
-                </div>
-                <div className="text-right">
-                   <button className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">150 pts</button>
-                </div>
-             </div>
-          </div>
-        )}
-      </main>
-
-      {activeModal === 'upgrade' && (
-        <Modal title="Seja Guitask Pro" onClose={() => setActiveModal(null)} isDark={isDark}>
-          <div className="space-y-6">
-            <div className="p-6 bg-indigo-600/10 rounded-[2rem] border-2 border-indigo-600/20 text-center">
-               <p className="text-indigo-600 font-black text-3xl">R$ 19,90<span className="text-xs opacity-60">/mês</span></p>
-            </div>
-            <ul className="space-y-4 text-sm font-bold">
-              <li className="flex items-center gap-4"><div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><Check size={14} /></div> Sincronização em Nuvem</li>
-              <li className="flex items-center gap-4"><div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><Check size={14} /></div> Histórico Sem Limites</li>
-              <li className="flex items-center gap-4"><div className="w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><Check size={14} /></div> Modo Foco IA</li>
-            </ul>
-            <button onClick={() => window.open(STRIPE_LINK, '_blank')} className="w-full py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
-              <CreditCard size={20} /> Assinar Agora
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {activeModal === 'macro' && (
-        <Modal title="Qual seu próximo grande objetivo?" onClose={() => setActiveModal(null)} isDark={isDark}>
-           <div className="space-y-6">
-              <input autoFocus value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreateMacro()} placeholder="Ex: Lançar meu projeto novo" className={`w-full p-5 border-2 rounded-[2rem] font-black text-lg outline-none focus:border-indigo-500 transition-all ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100'}`} />
-              <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Traçar Estratégia</button>
-           </div>
-        </Modal>
-      )}
+const Modal = ({ title, onClose, children, isDark }: any) => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300 overflow-y-auto">
+    <div className={`relative w-full max-w-lg rounded-[3.5rem] p-12 my-10 shadow-2xl animate-in zoom-in-95 fade-in duration-300 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+      <button onClick={onClose} className="absolute right-10 top-10 text-slate-400 hover:text-slate-600 hover:rotate-90 transition-all"><X size={28} /></button>
+      <h3 className="text-3xl font-black mb-10 tracking-tighter leading-tight text-slate-700 dark:text-slate-300">{title}</h3>
+      {children}
     </div>
-  );
-};
+  </div>
+);
 
-const AuthScreen = ({ theme }: { theme: string }) => {
+const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: () => void }) => {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -425,56 +66,700 @@ const AuthScreen = ({ theme }: { theme: string }) => {
           <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl mb-6 group hover:rotate-12 transition-transform duration-300">
             <Zap size={40} fill="currentColor" />
           </div>
-          <h2 className="text-4xl font-black tracking-tighter leading-none mb-1">GUITASK</h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Hyperfocus OS</p>
+          <h2 className="text-4xl font-black tracking-tighter leading-none mb-1 text-indigo-600">GUITASK</h2>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Clareza para mentes inquietas.</p>
         </div>
-
         <div className="px-10 pb-12 space-y-6">
-          <div className="flex p-1.5 bg-slate-100 dark:bg-slate-800/50 rounded-2xl">
-            <button onClick={() => setMode('login')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>Entrar</button>
-            <button onClick={() => setMode('signup')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500'}`}>Criar</button>
+          <div className="flex p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800">
+            <button onClick={() => setMode('login')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-600 hover:text-indigo-600'}`}>Entrar</button>
+            <button onClick={() => setMode('signup')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-600 hover:text-indigo-600'}`}>Cadastre-se</button>
           </div>
-
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-slate-400 ml-4">E-mail</label>
-              <input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} />
+              <label className="text-[10px] font-black uppercase text-slate-500 ml-4">E-mail</label>
+              <input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400'}`} />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-slate-400 ml-4">Senha</label>
-              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100 focus:bg-white'}`} />
+              <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Senha</label>
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400'}`} />
             </div>
             <button type="submit" disabled={loading} className="w-full py-5 mt-2 bg-indigo-600 text-white rounded-[2rem] font-black shadow-xl flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-95 transition-all">
-              {loading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : (mode === 'login' ? 'Acessar Guitask' : 'Começar Gratuitamente')}
+              {loading ? <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : (mode === 'login' ? 'Acessar' : 'Criar Conta')}
             </button>
           </form>
-
-          {mode === 'login' && (
-            <p className="text-center text-[10px] font-bold text-slate-400 mt-2">
-              Problemas com o acesso? <button className="text-indigo-500 hover:underline">Recuperar senha</button>
-            </p>
-          )}
+          <button onClick={onGuestAccess} className={`w-full py-4 rounded-2xl border-2 font-black text-xs uppercase flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 ${isDark ? 'border-slate-800 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+             Modo de Demonstração
+          </button>
         </div>
       </div>
-      <p className="mt-8 text-[11px] font-medium text-slate-400 text-center max-w-[300px] leading-relaxed">Foco é uma habilidade, não um dom. <br/> Estamos aqui para ajudar.</p>
     </div>
   );
 };
 
-const NavItem = ({ active, onClick, icon, label, isDark }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-4 w-full px-5 py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-400 bg-indigo-950/30 shadow-inner' : 'text-indigo-600 bg-indigo-50 shadow-sm') : 'text-slate-400 hover:bg-slate-100'}`}>
-    {icon} <span className="text-sm uppercase font-black tracking-tight">{label}</span>
-  </button>
-);
+const App: React.FC = () => {
+  const [session, setSession] = useState<any>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.GUEST_SESSION);
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
 
-const Modal = ({ title, onClose, children, isDark }: any) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300">
-    <div className={`relative w-full max-w-md rounded-[4rem] p-12 shadow-2xl animate-in zoom-in-95 fade-in duration-300 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-      <button onClick={onClose} className="absolute right-10 top-10 text-slate-400 hover:text-slate-600 hover:rotate-90 transition-all"><X size={28} /></button>
-      <h3 className="text-3xl font-black mb-10 tracking-tighter leading-tight">{title}</h3>
-      {children}
+  const [tasks, setTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.TASKS) || '[]'));
+  const [completedTasks, setCompletedTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPLETED_TASKS) || '[]'));
+  const [stats, setStats] = useState<UserStats>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.STATS) || '{"points":0,"tasksCompleted":0,"streak":1}'));
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem(STORAGE_KEYS.THEME) as 'light' | 'dark') || 'light');
+  const [view, setView] = useState<'global' | 'local' | 'rewards' | 'history'>('global');
+  const [isCompactMode, setIsCompactMode] = useState(() => localStorage.getItem(STORAGE_KEYS.VIEW_PREFERENCE) === 'compact');
+  const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  
+  // Pomodoro Settings & State
+  const [timerSettings, setTimerSettings] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.TIMER_SETTINGS);
+    return saved ? JSON.parse(saved) : { focus: 25, short: 5, long: 15 };
+  });
+  
+  const [pomodoroTime, setPomodoroTime] = useState(timerSettings.focus * 60);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [pomodoroMode, setPomodoroMode] = useState<'focus' | 'short' | 'long'>('focus');
+  
+  // Delta Time management
+  const timerRef = useRef<number | null>(null);
+  const lastTickTimestamp = useRef<number>(Date.now());
+  const accumulatedFocusSeconds = useRef<number>(0);
+
+  // Task creation states
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskContext, setNewTaskContext] = useState("");
+  const [newTaskDeadline, setNewTaskDeadline] = useState(new Date().toISOString().split('T')[0]);
+  const [newSubTask, setNewSubTask] = useState({ title: '', notes: '', link: '', dueDate: '' });
+
+  const isDark = theme === 'dark';
+
+  // Persistence
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
+    localStorage.setItem(STORAGE_KEYS.COMPLETED_TASKS, JSON.stringify(completedTasks));
+    localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
+    localStorage.setItem(STORAGE_KEYS.TIMER_SETTINGS, JSON.stringify(timerSettings));
+    localStorage.setItem(STORAGE_KEYS.VIEW_PREFERENCE, isCompactMode ? 'compact' : 'expanded');
+  }, [tasks, completedTasks, stats, timerSettings, isCompactMode]);
+
+  // Delta Time Pomodoro Logic
+  useEffect(() => {
+    if (isTimerRunning) {
+      lastTickTimestamp.current = Date.now();
+      
+      const tick = () => {
+        const now = Date.now();
+        const delta = Math.floor((now - lastTickTimestamp.current) / 1000);
+        
+        if (delta >= 1) {
+          setPomodoroTime(prev => {
+            const nextTime = Math.max(0, prev - delta);
+            
+            // Sync time to task if in focus mode
+            if (pomodoroMode === 'focus' && activeTaskId) {
+              accumulatedFocusSeconds.current += delta;
+              if (accumulatedFocusSeconds.current >= 60) {
+                const minutesToApply = Math.floor(accumulatedFocusSeconds.current / 60);
+                setTasks(currentTasks => currentTasks.map(t => 
+                  t.id === activeTaskId ? { ...t, totalTimeSpent: (t.totalTimeSpent || 0) + minutesToApply } : t
+                ));
+                accumulatedFocusSeconds.current %= 60;
+              }
+            }
+            
+            if (nextTime === 0 && prev > 0) {
+              setIsTimerRunning(false);
+              new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(() => {});
+              confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+            }
+            return nextTime;
+          });
+          lastTickTimestamp.current = now;
+        }
+        timerRef.current = requestAnimationFrame(tick);
+      };
+      
+      timerRef.current = requestAnimationFrame(tick);
+    } else {
+      if (timerRef.current) cancelAnimationFrame(timerRef.current);
+    }
+    
+    return () => {
+      if (timerRef.current) cancelAnimationFrame(timerRef.current);
+    };
+  }, [isTimerRunning, pomodoroMode, activeTaskId]);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+          setSession(currentSession);
+          localStorage.removeItem(STORAGE_KEYS.GUEST_SESSION);
+        }
+      } catch (err) { console.error("Auth init error:", err); }
+      finally { setAuthLoading(false); }
+    };
+    initAuth();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, newSession: any) => {
+      if (newSession) {
+        setSession(newSession);
+        localStorage.removeItem(STORAGE_KEYS.GUEST_SESSION);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setIsPro(false);
+    localStorage.removeItem(STORAGE_KEYS.GUEST_SESSION);
+  };
+
+  const enterGuestMode = () => {
+    const guestSession = { user: { email: 'convidado@guitask.app', id: 'guest-id' }, isGuest: true };
+    setSession(guestSession);
+    localStorage.setItem(STORAGE_KEYS.GUEST_SESSION, JSON.stringify(guestSession));
+  };
+
+  const handleCreateMacro = () => {
+    if (!newTaskTitle.trim()) return;
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: newTaskTitle,
+      description: newTaskContext,
+      priority: 'medium',
+      status: 'todo',
+      dueDate: newTaskDeadline,
+      estimatedTime: 30,
+      category: 'Estratégia',
+      completed: false,
+      subTasks: [],
+      rewardPoints: 100,
+      totalTimeSpent: 0,
+      links: []
+    };
+    setTasks([...tasks, newTask]);
+    setNewTaskTitle(""); 
+    setNewTaskContext("");
+    setNewTaskDeadline(new Date().toISOString().split('T')[0]);
+    setActiveModal(null);
+    setActiveTaskId(newTask.id);
+    setView('local');
+    setPomodoroMode('focus');
+    setPomodoroTime(timerSettings.focus * 60);
+  };
+
+  const handleAddSubTask = () => {
+    if (!newSubTask.title.trim() || !activeTaskId) return;
+    const sub: SubTask = {
+      id: Date.now().toString(),
+      title: newSubTask.title,
+      notes: newSubTask.notes,
+      link: newSubTask.link,
+      dueDate: newSubTask.dueDate,
+      completed: false,
+      status: 'todo',
+      rewardPoints: 10
+    };
+    setTasks(tasks.map(t => t.id === activeTaskId ? { ...t, subTasks: [...t.subTasks, sub] } : t));
+    setNewSubTask({ title: '', notes: '', link: '', dueDate: '' });
+    setActiveModal(null);
+  };
+
+  const updateSubTaskStatus = (subId: string, newStatus: TaskStatus) => {
+    if (!activeTaskId) return;
+    setTasks(prev => prev.map(t => {
+      if (t.id === activeTaskId) {
+        const updatedSubs = t.subTasks.map(s => {
+          if (s.id === subId) {
+             const wasCompleted = s.status === 'done';
+             const isNowCompleted = newStatus === 'done';
+             if (!wasCompleted && isNowCompleted) {
+                setStats(p => ({ ...p, points: p.points + 10 }));
+                confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 } });
+             }
+             return { ...s, status: newStatus, completed: isNowCompleted };
+          }
+          return s;
+        });
+        return { ...t, subTasks: updatedSubs };
+      }
+      return t;
+    }));
+  };
+
+  const completeMacroTask = () => {
+    if (!activeTaskId) return;
+    const task = tasks.find(t => t.id === activeTaskId);
+    if (!task) return;
+    setCompletedTasks([...completedTasks, { ...task, completed: true, completedAt: new Date().toISOString() }]);
+    setTasks(tasks.filter(t => t.id !== activeTaskId));
+    setStats(prev => ({ ...prev, points: prev.points + task.rewardPoints, tasksCompleted: prev.tasksCompleted + 1 }));
+    confetti({ particleCount: 200, spread: 90, origin: { y: 0.5 }, scalar: 1.2, gravity: 0.8 });
+    setActiveTaskId(null);
+    setView('global');
+  };
+
+  const activeTask = tasks.find(t => t.id === activeTaskId) || null;
+
+  const progress = useMemo(() => {
+    if (!activeTask || activeTask.subTasks.length === 0) return 0;
+    const completed = activeTask.subTasks.filter(s => s.status === 'done').length;
+    return Math.round((completed / activeTask.subTasks.length) * 100);
+  }, [activeTask]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const changeMode = (mode: 'focus' | 'short' | 'long') => {
+    setIsTimerRunning(false);
+    setPomodoroMode(mode);
+    setPomodoroTime(timerSettings[mode] * 60);
+    accumulatedFocusSeconds.current = 0;
+  };
+
+  const getFormattedDeadline = (dateStr: string) => {
+    if (!dateStr) return null;
+    try {
+      // Parse YYYY-MM-DD
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const deadlineDate = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const formatted = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+      const isOverdue = deadlineDate < today;
+      
+      return { 
+        text: formatted, 
+        color: isOverdue ? 'text-rose-500' : 'text-emerald-500' 
+      };
+    } catch (e) {
+      return null;
+    }
+  };
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Zap className="text-indigo-600 animate-bounce" size={48} /></div>;
+  if (!session) return <AuthScreen theme={theme} onGuestAccess={enterGuestMode} />;
+
+  return (
+    <div className={`min-h-screen pb-24 md:pb-0 md:pl-64 flex flex-col transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:w-64 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl`}>
+        <div className="hidden md:flex flex-col items-start gap-10 mb-10 w-full">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg mt-1"><Zap size={22} fill="currentColor" /></div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xl font-black tracking-tighter leading-none">GUITASK</h1>
+              </div>
+              <p className="text-[10px] font-bold text-slate-500 mt-1">Clareza para mentes inquietas.</p>
+            </div>
+          </div>
+          <div className="w-full space-y-2">
+            <NavItem active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
+            <NavItem active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
+            <NavItem active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
+          </div>
+          <div className="w-full mt-auto">
+            <button onClick={handleLogout} className="w-full p-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 font-black text-xs uppercase flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors">
+              <LogOut size={16} /> Sair
+            </button>
+          </div>
+        </div>
+        <div className="flex md:hidden items-center justify-around w-full h-full px-4">
+           <button onClick={() => setView('global')} className={`p-2 rounded-xl ${view === 'global' ? 'text-indigo-600' : 'text-slate-500'}`}><LayoutDashboard size={24} /></button>
+           <button onClick={() => setView('local')} className={`p-2 rounded-xl ${view === 'local' ? 'text-indigo-600' : 'text-slate-500'}`}><Target size={24} /></button>
+           <button onClick={() => setActiveModal('macro')} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
+           <button onClick={() => setView('rewards')} className={`p-2 rounded-xl ${view === 'rewards' ? 'text-indigo-600' : 'text-slate-500'}`}><Trophy size={24} /></button>
+           <button onClick={handleLogout} className="p-2 rounded-xl text-rose-600"><LogOut size={24} /></button>
+        </div>
+      </nav>
+
+      <main className="flex-1 p-4 md:p-10 w-full max-w-[1400px] mx-auto pt-10">
+        {view === 'global' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <h2 className="text-4xl font-black tracking-tight">Estratégia Global</h2>
+                <p className="text-sm font-bold text-slate-500 italic">Visualize o destino, não apenas os passos.</p>
+              </div>
+              <button onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
+                <Plus size={20} /> Novo Objetivo
+              </button>
+            </header>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tasks.map(task => {
+                 const taskProgress = task.subTasks.length > 0 ? Math.round((task.subTasks.filter(s => s.status === 'done').length / task.subTasks.length) * 100) : 0;
+                 return (
+                  <div key={task.id} onClick={() => { setActiveTaskId(task.id); setView('local'); }} className={`p-8 rounded-[3.5rem] border-2 transition-all cursor-pointer shadow-sm group flex flex-col justify-between h-80 hover:translate-y-[-4px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 hover:border-indigo-100'}`}>
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-[10px] font-black px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase">{task.category}</span>
+                      </div>
+                      <h3 className="text-2xl font-black leading-tight group-hover:text-indigo-600 transition-colors">{task.title}</h3>
+                      <p className="text-sm font-bold text-slate-500 line-clamp-2 mt-2 leading-relaxed">{task.description}</p>
+                    </div>
+                    <div className="mt-auto space-y-4">
+                       <div className="flex items-center justify-between text-[10px] font-black uppercase text-slate-500">
+                          <span>Progresso</span>
+                          <span>{taskProgress}%</span>
+                       </div>
+                       <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                          <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${taskProgress}%` }} />
+                       </div>
+                    </div>
+                  </div>
+                 );
+              })}
+              {tasks.length === 0 && (
+                <div className="col-span-full py-32 flex flex-col items-center justify-center text-center">
+                   <div className="w-24 h-24 bg-slate-100 dark:bg-slate-900 rounded-[2rem] flex items-center justify-center mb-6 text-slate-300"><LayoutDashboard size={40} /></div>
+                   <h3 className="text-xl font-black mb-2">Tudo limpo no horizonte.</h3>
+                   <p className="text-sm font-bold text-slate-500">Qual o próximo grande objetivo?</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {view === 'local' && activeTask && (
+          <div className="w-full max-w-6xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500 pb-20">
+             <div className="flex items-center justify-between">
+                <button onClick={() => setView('global')} className="text-xs font-black uppercase text-indigo-600 flex items-center gap-2 hover:translate-x-[-4px] transition-transform"><ArrowLeft size={14} /> Voltar para Visão Global</button>
+                <button 
+                  onClick={() => setIsCompactMode(!isCompactMode)} 
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-sm'}`}
+                >
+                  {isCompactMode ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+                  {isCompactMode ? 'Visão Ampla' : 'Mover para Lateral'}
+                </button>
+             </div>
+             
+             <div className={`grid grid-cols-1 ${isCompactMode ? 'lg:grid-cols-3' : ''} gap-6`}>
+               {/* Objective Header Window */}
+               <div className={`${isCompactMode ? 'lg:col-span-2' : ''} p-10 rounded-[3.5rem] shadow-xl border relative overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <div className="relative z-10 flex flex-col gap-6">
+                     <div className="flex items-center">
+                        <div className="px-3 py-1 bg-indigo-600 text-white rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                           <Clock size={12} /> {activeTask.totalTimeSpent || 0} Minutos Dedicados
+                        </div>
+                     </div>
+
+                     <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                           <Target size={isCompactMode ? 24 : 32} className="text-indigo-600" />
+                           <h2 className={`${isCompactMode ? 'text-2xl' : 'text-4xl'} font-black tracking-tight dark:text-white transition-all`} style={{ color: isDark ? undefined : '#0f172a' }}>{activeTask.title}</h2>
+                        </div>
+                        <p className={`${isCompactMode ? 'text-base' : 'text-lg'} font-bold leading-relaxed max-w-2xl dark:text-slate-300 transition-all`} style={{ color: isDark ? undefined : '#334155' }}>
+                           {activeTask.description || 'Sem contexto definido.'}
+                        </p>
+                     </div>
+
+                     {!isCompactMode && (
+                        <div className="pt-4 border-t border-slate-100/40 dark:border-slate-800/50 flex flex-wrap items-center gap-3 animate-in fade-in duration-500">
+                           <p className="text-[10px] font-black uppercase text-slate-500 mr-2">Referências:</p>
+                           {activeTask.links?.map(l => (
+                              <a key={l.id} href={l.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/50 dark:border-slate-700 hover:border-indigo-600 transition-all text-xs font-bold text-slate-700 dark:text-slate-200">
+                                 <Link2 size={12} className="text-indigo-600" /> {l.title}
+                              </a>
+                           ))}
+                           <button onClick={() => setActiveModal('links')} className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-800 transition-colors p-2 font-black">
+                              <PlusCircle size={14} /> Gerenciar Links
+                           </button>
+                        </div>
+                     )}
+                  </div>
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
+               </div>
+
+               {/* Pomodoro Timer Window */}
+               <div className={`${isCompactMode ? 'lg:col-span-1' : ''} p-10 rounded-[3.5rem] shadow-xl border overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <div className="flex flex-col items-center gap-8">
+                     <div className="w-full flex justify-center items-center px-4 relative">
+                        <div className={`flex ${isCompactMode ? 'gap-2' : 'gap-4'}`}>
+                           <button onClick={() => changeMode('focus')} className={`${isCompactMode ? 'px-3 text-[8px]' : 'px-6 text-[10px]'} py-2 rounded-2xl font-black uppercase transition-all ${pomodoroMode === 'focus' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 font-bold hover:text-indigo-600'}`}>Foco</button>
+                           <button onClick={() => changeMode('short')} className={`${isCompactMode ? 'px-3 text-[8px]' : 'px-6 text-[10px]'} py-2 rounded-2xl font-black uppercase transition-all ${pomodoroMode === 'short' ? 'bg-[#ff6e30] text-white shadow-md' : 'text-slate-600 font-bold hover:text-[#ff6e30]'}`}>Pausa</button>
+                           <button onClick={() => changeMode('long')} className={`${isCompactMode ? 'px-3 text-[8px]' : 'px-6 text-[10px]'} py-2 rounded-2xl font-black uppercase transition-all ${pomodoroMode === 'long' ? 'bg-[#ff3131] text-white shadow-md' : 'text-slate-600 font-bold hover:text-[#ff3131]'}`}>Descanso</button>
+                        </div>
+                        <button onClick={() => setActiveModal('timerSettings')} className="absolute right-0 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-indigo-600 transition-all">
+                           <Settings2 size={isCompactMode ? 16 : 20} />
+                        </button>
+                     </div>
+                     
+                     <div className="relative">
+                        <div 
+                          className={`${isCompactMode ? 'text-6xl' : 'text-9xl'} font-black tracking-tighter tabular-nums select-none transition-all duration-500 ${!isTimerRunning && (isDark ? 'text-slate-700' : 'text-slate-300')}`} 
+                          style={{ 
+                            color: isTimerRunning ? (pomodoroMode === 'focus' ? '#5246e5' : pomodoroMode === 'short' ? '#ff6e30' : '#f31321') : undefined 
+                          }}
+                        >
+                          {formatTime(pomodoroTime)}
+                        </div>
+                     </div>
+
+                     <div className="flex items-center gap-6">
+                        <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`${isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all ${isTimerRunning ? 'bg-rose-500' : 'bg-indigo-600'}`}>
+                           {isTimerRunning ? <Pause size={isCompactMode ? 24 : 40} fill="currentColor" /> : <Play size={isCompactMode ? 24 : 40} fill="currentColor" className="ml-1" />}
+                        </button>
+                        <button onClick={() => { setIsTimerRunning(false); setPomodoroTime(timerSettings[pomodoroMode] * 60); accumulatedFocusSeconds.current = 0; }} className={`${isCompactMode ? 'w-12 h-12 rounded-2xl' : 'w-16 h-16 rounded-3xl'} bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-700`}>
+                           <RotateCcw size={isCompactMode ? 20 : 28} />
+                        </button>
+                     </div>
+                  </div>
+               </div>
+             </div>
+
+             {/* Kanban Micro-Tasks Window */}
+             <div className="space-y-6">
+                <div className="flex items-center justify-between px-4">
+                   <h3 className="text-2xl font-black tracking-tight">Atividades</h3>
+                   <button onClick={() => setActiveModal('subtask')} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 transition-all">
+                      <PlusCircle size={18} /> Adicionar atividade
+                   </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                   {['todo', 'doing', 'done'].map((status) => (
+                      <div 
+                        key={status} 
+                        onDragOver={(e) => { e.preventDefault(); setDragOverColumn(status); }}
+                        onDragLeave={() => setDragOverColumn(null)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const subId = e.dataTransfer.getData('subId');
+                          if (subId) updateSubTaskStatus(subId, status as TaskStatus);
+                          setDragOverColumn(null);
+                        }}
+                        className={`p-6 rounded-[3rem] min-h-[400px] border-2 transition-all duration-300 ${dragOverColumn === status ? 'border-indigo-400 bg-indigo-50/20' : 'border-dashed border-slate-300'} ${isDark ? 'bg-slate-900/40 border-slate-800' : 'bg-slate-100/50'}`}
+                      >
+                         <div className="flex items-center justify-between mb-6 px-4">
+                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500">
+                               {status === 'todo' ? 'A Fazer' : status === 'doing' ? 'Em Andamento' : 'Concluído'}
+                            </h4>
+                            <span className="bg-white px-3 py-1 rounded-full text-[10px] font-black shadow-sm text-slate-700">
+                               {activeTask.subTasks.filter(s => s.status === status).length}
+                            </span>
+                         </div>
+
+                         <div className="space-y-4">
+                            {activeTask.subTasks.filter(s => s.status === status).map(sub => {
+                               const deadlineInfo = getFormattedDeadline(sub.dueDate || "");
+                               return (
+                               <div 
+                                 key={sub.id} 
+                                 draggable
+                                 onDragStart={(e) => {
+                                   e.dataTransfer.setData('subId', sub.id);
+                                   e.dataTransfer.effectAllowed = 'move';
+                                 }}
+                                 className={`p-6 rounded-[2rem] border-2 shadow-sm group transition-all animate-in fade-in slide-in-from-top-2 cursor-grab active:cursor-grabbing hover:shadow-md ${isDark ? 'bg-slate-900 border-slate-800 hover:border-indigo-600' : 'bg-white border-white hover:border-indigo-100'}`}
+                               >
+                                  <div className="flex items-start justify-between mb-3">
+                                     <div className="flex items-start gap-2">
+                                        <GripVertical size={16} className="text-slate-300 mt-1 cursor-grab" />
+                                        <h5 className="font-black text-lg leading-tight dark:text-white" style={{ color: isDark ? undefined : '#0f172a' }}>{sub.title}</h5>
+                                     </div>
+                                  </div>
+                                  
+                                  {sub.notes && <p className="text-xs font-bold mb-3 line-clamp-3 leading-relaxed ml-6" style={{ color: '#a6a6a6' }}>{sub.notes}</p>}
+                                  
+                                  <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2 ml-6">
+                                     {deadlineInfo && (
+                                        <div className={`flex items-center gap-1 text-[9px] font-black uppercase px-0 py-1 rounded-md ${deadlineInfo.color}`}>
+                                           <Clock size={10} /> {deadlineInfo.text}
+                                        </div>
+                                     )}
+                                     {sub.link && (
+                                        <a href={sub.link} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-400 py-1 hover:underline">
+                                           <ExternalLink size={10} /> Links relacionados
+                                        </a>
+                                     )}
+                                  </div>
+                               </div>
+                            )})}
+                         </div>
+                      </div>
+                   ))}
+                </div>
+
+                {progress === 100 && activeTask.subTasks.length > 0 && (
+                   <div className="pt-10 flex justify-center">
+                      <button onClick={completeMacroTask} className="px-12 py-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-[2.5rem] font-black text-xl shadow-xl hover:scale-105 transition-all flex items-center gap-4">
+                         <CheckCircle size={32} /> Objetivo Concluído!
+                      </button>
+                   </div>
+                )}
+             </div>
+          </div>
+        )}
+
+        {view === 'rewards' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+             <div className="col-span-full p-12 rounded-[4rem] bg-indigo-600 text-white flex flex-col md:flex-row items-center justify-between overflow-hidden relative shadow-2xl mb-6">
+                <div className="z-10 text-center md:text-left">
+                   <h3 className="text-5xl font-black mb-2">Loja de Foco</h3>
+                   <p className="text-xl text-indigo-100 font-bold opacity-90">Você trabalhou duro. Hora de se presentear.</p>
+                </div>
+                <div className="text-center md:text-right z-10 mt-8 md:mt-0">
+                   <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">Seu Saldo Disponível</p>
+                   <p className="text-7xl font-black flex items-center gap-4 justify-center md:justify-end">{stats.points} <Star size={50} fill="currentColor" /></p>
+                </div>
+                <Zap className="absolute -right-12 -bottom-12 w-64 h-64 opacity-10 rotate-12" />
+             </div>
+             
+             <div className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="w-20 h-20 bg-amber-100 text-amber-700 rounded-3xl flex items-center justify-center"><Coffee size={36} /></div>
+                <div className="flex-1">
+                   <h4 className="text-xl font-black text-slate-900 dark:text-white">Pausa para Café</h4>
+                   <p className="text-sm font-bold text-slate-500">15 min de descanso total.</p>
+                </div>
+                <div className="text-right">
+                   <button className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">50 pts</button>
+                </div>
+             </div>
+
+             <div className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div className="w-20 h-20 bg-indigo-100 text-indigo-700 rounded-3xl flex items-center justify-center"><Play size={36} /></div>
+                <div className="flex-1">
+                   <h4 className="text-xl font-black text-slate-900 dark:text-white">Episódio de Série</h4>
+                   <p className="text-sm font-bold text-slate-500">Recompensa de alto valor.</p>
+                </div>
+                <div className="text-right">
+                   <button className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">150 pts</button>
+                </div>
+             </div>
+          </div>
+        )}
+      </main>
+
+      {/* Modals */}
+      {activeModal === 'timerSettings' && (
+        <Modal title="Ajustar Tempos" onClose={() => setActiveModal(null)} isDark={isDark}>
+           <div className="space-y-6">
+              {[
+                { key: 'focus', label: 'Tempo de Foco (min)', color: 'bg-indigo-600' },
+                { key: 'short', label: 'Pausa Curta (min)', color: 'bg-[#ff6e30]' },
+                { key: 'long', label: 'Descanso (min)', color: 'bg-[#ff3131]' }
+              ].map(setting => (
+                <div key={setting.key} className="space-y-2">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">{setting.label}</label>
+                   <div className="flex items-center gap-4">
+                      <input 
+                         type="number" 
+                         value={timerSettings[setting.key as keyof typeof timerSettings]} 
+                         onChange={e => {
+                            const val = Math.max(1, parseInt(e.target.value) || 1);
+                            setTimerSettings({...timerSettings, [setting.key]: val});
+                            if (pomodoroMode === setting.key && !isTimerRunning) {
+                               setPomodoroTime(val * 60);
+                            }
+                         }}
+                         className={`flex-1 p-4 border-2 rounded-2xl font-black text-lg outline-none focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
+                      />
+                      <div className={`w-4 h-12 rounded-full ${setting.color}`} />
+                   </div>
+                </div>
+              ))}
+              <button onClick={() => setActiveModal(null)} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">Salvar Configurações</button>
+           </div>
+        </Modal>
+      )}
+
+      {activeModal === 'macro' && (
+        <Modal title="Defina seu objetivo" onClose={() => setActiveModal(null)} isDark={isDark}>
+           <div className="space-y-6">
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título do objetivo</label>
+                 <input autoFocus value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Ex: Lançar meu projeto novo" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Contexto rápido</label>
+                 <textarea value={newTaskContext} onChange={e => setNewTaskContext(e.target.value)} placeholder="O que torna isso importante?" rows={3} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo final</label>
+                 <input type="date" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Traçar Estratégia</button>
+           </div>
+        </Modal>
+      )}
+
+      {activeModal === 'subtask' && (
+        <Modal title="Adicionar atividade" onClose={() => setActiveModal(null)} isDark={isDark}>
+           <div className="space-y-6">
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título da atividade</label>
+                 <input autoFocus value={newSubTask.title} onChange={e => setNewSubTask({...newSubTask, title: e.target.value})} placeholder="Ex: Pesquisar referências" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Comentários / Notas</label>
+                 <textarea value={newSubTask.notes} onChange={e => setNewSubTask({...newSubTask, notes: e.target.value})} placeholder="O que eu não posso esquecer?" rows={2} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo</label>
+                   <input 
+                      type="date" 
+                      value={newSubTask.dueDate} 
+                      onChange={e => setNewSubTask({ ...newSubTask, dueDate: e.target.value })} 
+                      className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
+                   />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Link relacionado</label>
+                   <input value={newSubTask.link} onChange={e => setNewSubTask({...newSubTask, link: e.target.value})} placeholder="URL aqui..." className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                </div>
+              </div>
+              <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Adicionar ao Plano</button>
+           </div>
+        </Modal>
+      )}
+
+      {activeModal === 'links' && activeTask && (
+        <Modal title="Links e Referências" onClose={() => setActiveModal(null)} isDark={isDark}>
+           <div className="space-y-6">
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-4">Mantenha tudo o que você precisa a um clique de distância.</p>
+              <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                 {activeTask.links?.map(l => (
+                    <a key={l.id} href={l.url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-indigo-600 transition-all group">
+                       <span className="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-indigo-600">{l.title}</span>
+                       <ExternalLink size={16} className="text-indigo-600" />
+                    </a>
+                 ))}
+                 {(!activeTask.links || activeTask.links.length === 0) && (
+                    <div className="text-center py-10 text-slate-400 italic font-medium">Nenhum link salvo ainda.</div>
+                 )}
+              </div>
+              <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                 <input placeholder="Título do link" className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} id="new-link-title" />
+                 <input placeholder="https://..." className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} id="new-link-url" />
+                 <button onClick={() => {
+                    const titleElement = document.getElementById('new-link-title') as HTMLInputElement;
+                    const urlElement = document.getElementById('new-link-url') as HTMLInputElement;
+                    const title = titleElement.value;
+                    const url = urlElement.value;
+                    if (title && url) {
+                       setTasks(prev => prev.map(t => t.id === activeTaskId ? { ...t, links: [...(t.links || []), { id: Date.now().toString(), title, url }] } : t));
+                       titleElement.value = '';
+                       urlElement.value = '';
+                    }
+                 }} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-black transition-colors">Adicionar Link</button>
+              </div>
+           </div>
+        </Modal>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default App;
