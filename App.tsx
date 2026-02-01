@@ -106,6 +106,13 @@ const App: React.FC = () => {
 
   const [tasks, setTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.TASKS) || '[]'));
   const [completedTasks, setCompletedTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPLETED_TASKS) || '[]'));
+  const [rewards, setRewards] = useState<Reward[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.REWARDS);
+    return saved ? JSON.parse(saved) : [
+      { id: '1', title: 'Pausa para Café', cost: 50, icon: 'coffee' },
+      { id: '2', title: 'Episódio de Série', cost: 150, icon: 'play' }
+    ];
+  });
   const [stats, setStats] = useState<UserStats>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.STATS) || '{"points":0,"tasksCompleted":0,"streak":1}'));
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem(STORAGE_KEYS.THEME) as 'light' | 'dark') || 'light');
   const [view, setView] = useState<'global' | 'local' | 'rewards' | 'history'>('global');
@@ -129,11 +136,13 @@ const App: React.FC = () => {
   const lastTickTimestamp = useRef<number>(Date.now());
   const accumulatedFocusSeconds = useRef<number>(0);
 
-  // Task creation states
+  // Task/Reward creation states
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskContext, setNewTaskContext] = useState("");
   const [newTaskDeadline, setNewTaskDeadline] = useState(new Date().toISOString().split('T')[0]);
   const [newSubTask, setNewSubTask] = useState({ title: '', notes: '', link: '', dueDate: '' });
+  const [newRewardTitle, setNewRewardTitle] = useState("");
+  const [newRewardCost, setNewRewardCost] = useState(50);
 
   const isDark = theme === 'dark';
 
@@ -141,10 +150,11 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
     localStorage.setItem(STORAGE_KEYS.COMPLETED_TASKS, JSON.stringify(completedTasks));
+    localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(rewards));
     localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
     localStorage.setItem(STORAGE_KEYS.TIMER_SETTINGS, JSON.stringify(timerSettings));
     localStorage.setItem(STORAGE_KEYS.VIEW_PREFERENCE, isCompactMode ? 'compact' : 'expanded');
-  }, [tasks, completedTasks, stats, timerSettings, isCompactMode]);
+  }, [tasks, completedTasks, rewards, stats, timerSettings, isCompactMode]);
 
   // Delta Time Pomodoro Logic
   useEffect(() => {
@@ -255,6 +265,20 @@ const App: React.FC = () => {
     setPomodoroTime(timerSettings.focus * 60);
   };
 
+  const handleCreateReward = () => {
+    if (!newRewardTitle.trim()) return;
+    const reward: Reward = {
+      id: Date.now().toString(),
+      title: newRewardTitle,
+      cost: newRewardCost,
+      icon: 'gift'
+    };
+    setRewards([...rewards, reward]);
+    setNewRewardTitle("");
+    setNewRewardCost(50);
+    setActiveModal(null);
+  };
+
   const handleAddSubTask = () => {
     if (!newSubTask.title.trim() || !activeTaskId) return;
     const sub: SubTask = {
@@ -303,7 +327,17 @@ const App: React.FC = () => {
     setStats(prev => ({ ...prev, points: prev.points + task.rewardPoints, tasksCompleted: prev.tasksCompleted + 1 }));
     confetti({ particleCount: 200, spread: 90, origin: { y: 0.5 }, scalar: 1.2, gravity: 0.8 });
     setActiveTaskId(null);
-    setView('global');
+    setView('history');
+  };
+
+  const redeemReward = (reward: Reward) => {
+    if (stats.points >= reward.cost) {
+      setStats(prev => ({ ...prev, points: prev.points - reward.cost }));
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.3 } });
+      alert(`Recompensa "${reward.title}" resgatada! Aproveite.`);
+    } else {
+      alert("Pontos insuficientes!");
+    }
   };
 
   const activeTask = tasks.find(t => t.id === activeTaskId) || null;
@@ -318,6 +352,12 @@ const App: React.FC = () => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const formatTotalTime = (totalMinutes: number = 0) => {
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${h.toString().padStart(2, '0')}h${m.toString().padStart(2, '0')}min`;
   };
 
   const changeMode = (mode: 'focus' | 'short' | 'long') => {
@@ -367,19 +407,34 @@ const App: React.FC = () => {
           <div className="w-full space-y-2">
             <NavItem active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
             <NavItem active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
+            <NavItem active={view === 'history'} onClick={() => setView('history')} icon={<History size={20} />} label="Histórico" isDark={isDark} />
             <NavItem active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
           </div>
-          <div className="w-full mt-auto">
+          <div className="w-full mt-auto space-y-4">
+            <div className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${isDark ? 'bg-indigo-950/20 border-indigo-900/50' : 'bg-indigo-50 border-indigo-100'}`}>
+               <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+                     <Star size={16} fill="currentColor" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase text-indigo-600">Meus Pontos</span>
+               </div>
+               <span className="text-lg font-black tracking-tighter text-indigo-700 dark:text-indigo-400">{stats.points}</span>
+            </div>
             <button onClick={handleLogout} className="w-full p-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 font-black text-xs uppercase flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors">
               <LogOut size={16} /> Sair
             </button>
           </div>
         </div>
-        <div className="flex md:hidden items-center justify-around w-full h-full px-4">
+        <div className="flex md:hidden items-center justify-around w-full h-full px-4 relative">
            <button onClick={() => setView('global')} className={`p-2 rounded-xl ${view === 'global' ? 'text-indigo-600' : 'text-slate-500'}`}><LayoutDashboard size={24} /></button>
            <button onClick={() => setView('local')} className={`p-2 rounded-xl ${view === 'local' ? 'text-indigo-600' : 'text-slate-500'}`}><Target size={24} /></button>
            <button onClick={() => setActiveModal('macro')} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
-           <button onClick={() => setView('rewards')} className={`p-2 rounded-xl ${view === 'rewards' ? 'text-indigo-600' : 'text-slate-500'}`}><Trophy size={24} /></button>
+           <div className="relative group">
+              <button onClick={() => setView('rewards')} className={`p-2 rounded-xl ${view === 'rewards' ? 'text-indigo-600' : 'text-slate-500'}`}><Trophy size={24} /></button>
+              <div className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-white text-[8px] font-black rounded-full border border-white">
+                {stats.points}
+              </div>
+           </div>
            <button onClick={handleLogout} className="p-2 rounded-xl text-rose-600"><LogOut size={24} /></button>
         </div>
       </nav>
@@ -399,11 +454,19 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {tasks.map(task => {
                  const taskProgress = task.subTasks.length > 0 ? Math.round((task.subTasks.filter(s => s.status === 'done').length / task.subTasks.length) * 100) : 0;
+                 const deadlineInfo = getFormattedDeadline(task.dueDate);
                  return (
                   <div key={task.id} onClick={() => { setActiveTaskId(task.id); setView('local'); }} className={`p-8 rounded-[3.5rem] border-2 transition-all cursor-pointer shadow-sm group flex flex-col justify-between h-80 hover:translate-y-[-4px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 hover:border-indigo-100'}`}>
                     <div>
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="text-[10px] font-black px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase">{task.category}</span>
+                      <div className="flex flex-wrap items-center gap-2 mb-4">
+                        <span className="text-[10px] font-black px-3 py-1 bg-indigo-600 text-white rounded-full uppercase flex items-center gap-1.5 shadow-sm">
+                           <Clock size={12} /> {formatTotalTime(task.totalTimeSpent)}
+                        </span>
+                        {deadlineInfo && (
+                          <span className={`text-[10px] font-black px-3 py-1 ${isDark ? 'bg-slate-800' : 'bg-slate-100'} ${deadlineInfo.color} rounded-full uppercase flex items-center gap-1.5 shadow-sm`}>
+                             <Calendar size={12} /> Prazo: {deadlineInfo.text}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-2xl font-black leading-tight group-hover:text-indigo-600 transition-colors">{task.title}</h3>
                       <p className="text-sm font-bold text-slate-500 line-clamp-2 mt-2 leading-relaxed">{task.description}</p>
@@ -431,17 +494,65 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {view === 'history' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <header className="mb-10">
+              <h2 className="text-4xl font-black tracking-tight">Histórico de Conquistas</h2>
+              <p className="text-sm font-bold text-slate-500 italic">Cada objetivo concluído é um degrau para o topo.</p>
+            </header>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {completedTasks.map(task => (
+                <div key={task.id} className={`p-8 rounded-[3.5rem] border-2 shadow-sm flex flex-col justify-between h-80 opacity-90 transition-all hover:opacity-100 grayscale hover:grayscale-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                      <span className="text-[10px] font-black px-3 py-1 bg-emerald-600 text-white rounded-full uppercase flex items-center gap-1.5 shadow-sm">
+                         <CheckCircle size={12} /> Concluído
+                      </span>
+                      <span className="text-[10px] font-black px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full uppercase flex items-center gap-1.5">
+                         <Clock size={12} /> {formatTotalTime(task.totalTimeSpent)}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-black leading-tight text-slate-800 dark:text-slate-200">{task.title}</h3>
+                    <p className="text-sm font-bold text-slate-500 line-clamp-3 mt-2 leading-relaxed">{task.description}</p>
+                  </div>
+                  <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
+                     <p className="text-[10px] font-black uppercase text-slate-400">Finalizado em:</p>
+                     <p className="text-xs font-black text-slate-600 dark:text-slate-300">{task.completedAt ? new Date(task.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Data não registrada'}</p>
+                  </div>
+                </div>
+              ))}
+              {completedTasks.length === 0 && (
+                <div className="col-span-full py-32 flex flex-col items-center justify-center text-center">
+                   <div className="w-24 h-24 bg-slate-100 dark:bg-slate-900 rounded-[2rem] flex items-center justify-center mb-6 text-slate-300"><History size={40} /></div>
+                   <h3 className="text-xl font-black mb-2">Seu histórico está em branco.</h3>
+                   <p className="text-sm font-bold text-slate-500">Conclua seu primeiro objetivo para eternizá-lo aqui!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {view === 'local' && activeTask && (
           <div className="w-full max-w-6xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500 pb-20">
              <div className="flex items-center justify-between">
                 <button onClick={() => setView('global')} className="text-xs font-black uppercase text-indigo-600 flex items-center gap-2 hover:translate-x-[-4px] transition-transform"><ArrowLeft size={14} /> Voltar para Visão Global</button>
-                <button 
-                  onClick={() => setIsCompactMode(!isCompactMode)} 
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-sm'}`}
-                >
-                  {isCompactMode ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
-                  {isCompactMode ? 'Visão Ampla' : 'Mover para Lateral'}
-                </button>
+                <div className="flex items-center gap-3">
+                   {progress === 100 && activeTask.subTasks.length > 0 && (
+                      <button 
+                        onClick={completeMacroTask}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-[#0f172a] text-white hover:bg-slate-800 shadow-md animate-in fade-in slide-in-from-right-2"
+                      >
+                        <CheckCircle size={14} /> Objetivo Concluído
+                      </button>
+                   )}
+                   <button 
+                      onClick={() => setIsCompactMode(!isCompactMode)} 
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${isDark ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-white text-slate-500 hover:text-indigo-600 shadow-sm'}`}
+                   >
+                      {isCompactMode ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+                      {isCompactMode ? 'Maximizar' : 'Minimizar'}
+                   </button>
+                </div>
              </div>
              
              <div className={`grid grid-cols-1 ${isCompactMode ? 'lg:grid-cols-3' : ''} gap-6`}>
@@ -450,7 +561,7 @@ const App: React.FC = () => {
                   <div className="relative z-10 flex flex-col gap-6">
                      <div className="flex items-center">
                         <div className="px-3 py-1 bg-indigo-600 text-white rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
-                           <Clock size={12} /> {activeTask.totalTimeSpent || 0} Minutos Dedicados
+                           <Clock size={12} /> {formatTotalTime(activeTask.totalTimeSpent)}
                         </div>
                      </div>
 
@@ -590,14 +701,6 @@ const App: React.FC = () => {
                       </div>
                    ))}
                 </div>
-
-                {progress === 100 && activeTask.subTasks.length > 0 && (
-                   <div className="pt-10 flex justify-center">
-                      <button onClick={completeMacroTask} className="px-12 py-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-[2.5rem] font-black text-xl shadow-xl hover:scale-105 transition-all flex items-center gap-4">
-                         <CheckCircle size={32} /> Objetivo Concluído!
-                      </button>
-                   </div>
-                )}
              </div>
           </div>
         )}
@@ -606,7 +709,10 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
              <div className="col-span-full p-12 rounded-[4rem] bg-indigo-600 text-white flex flex-col md:flex-row items-center justify-between overflow-hidden relative shadow-2xl mb-6">
                 <div className="z-10 text-center md:text-left">
-                   <h3 className="text-5xl font-black mb-2">Loja de Foco</h3>
+                   <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
+                      <h3 className="text-5xl font-black">Loja de Foco</h3>
+                      <button onClick={() => setActiveModal('createReward')} className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all"><Plus size={24} /></button>
+                   </div>
                    <p className="text-xl text-indigo-100 font-bold opacity-90">Você trabalhou duro. Hora de se presentear.</p>
                 </div>
                 <div className="text-center md:text-right z-10 mt-8 md:mt-0">
@@ -616,32 +722,53 @@ const App: React.FC = () => {
                 <Zap className="absolute -right-12 -bottom-12 w-64 h-64 opacity-10 rotate-12" />
              </div>
              
-             <div className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-                <div className="w-20 h-20 bg-amber-100 text-amber-700 rounded-3xl flex items-center justify-center"><Coffee size={36} /></div>
-                <div className="flex-1">
-                   <h4 className="text-xl font-black text-slate-900 dark:text-white">Pausa para Café</h4>
-                   <p className="text-sm font-bold text-slate-500">15 min de descanso total.</p>
-                </div>
-                <div className="text-right">
-                   <button className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">50 pts</button>
-                </div>
-             </div>
+             {rewards.map(reward => (
+               <div key={reward.id} className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 group hover:border-indigo-600 transition-all ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center ${reward.icon === 'coffee' ? 'bg-amber-100 text-amber-700' : reward.icon === 'play' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {reward.icon === 'coffee' ? <Coffee size={36} /> : reward.icon === 'play' ? <Play size={36} /> : <Gift size={36} />}
+                  </div>
+                  <div className="flex-1">
+                     <h4 className="text-xl font-black transition-colors" style={{ color: isDark ? undefined : '#0f172a' }}>{reward.title}</h4>
+                     <p className="text-sm font-bold text-slate-500">{reward.cost} pontos necessários.</p>
+                  </div>
+                  <div className="text-right">
+                     <button 
+                        onClick={() => redeemReward(reward)}
+                        className={`px-6 py-3 rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all ${stats.points >= reward.cost ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+                     >
+                       {reward.cost} pts
+                     </button>
+                  </div>
+               </div>
+             ))}
 
-             <div className={`p-8 rounded-[3.5rem] border-2 flex items-center gap-6 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-                <div className="w-20 h-20 bg-indigo-100 text-indigo-700 rounded-3xl flex items-center justify-center"><Play size={36} /></div>
-                <div className="flex-1">
-                   <h4 className="text-xl font-black text-slate-900 dark:text-white">Episódio de Série</h4>
-                   <p className="text-sm font-bold text-slate-500">Recompensa de alto valor.</p>
+             {rewards.length === 0 && (
+                <div className="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-50">
+                   <Trophy size={48} className="mb-4 text-slate-300" />
+                   <p className="font-bold">Nenhum prêmio cadastrado.</p>
                 </div>
-                <div className="text-right">
-                   <button className="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">150 pts</button>
-                </div>
-             </div>
+             )}
           </div>
         )}
       </main>
 
       {/* Modals */}
+      {activeModal === 'createReward' && (
+        <Modal title="Novo Prêmio" onClose={() => setActiveModal(null)} isDark={isDark}>
+           <div className="space-y-6">
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Nome do Prêmio</label>
+                 <input autoFocus value={newRewardTitle} onChange={e => setNewRewardTitle(e.target.value)} placeholder="Ex: Comer uma pizza" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Custo em Pontos</label>
+                 <input type="number" value={newRewardCost} onChange={e => setNewRewardCost(Math.max(1, parseInt(e.target.value) || 0))} className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+              </div>
+              <button onClick={handleCreateReward} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Salvar Prêmio</button>
+           </div>
+        </Modal>
+      )}
+
       {activeModal === 'timerSettings' && (
         <Modal title="Ajustar Tempos" onClose={() => setActiveModal(null)} isDark={isDark}>
            <div className="space-y-6">
@@ -689,7 +816,7 @@ const App: React.FC = () => {
                  <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo final</label>
                  <input type="date" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
               </div>
-              <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Traçar Estratégia</button>
+              <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Criar</button>
            </div>
         </Modal>
       )}
