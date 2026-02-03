@@ -52,6 +52,14 @@ export interface Reward {
   icon: string;
 }
 
+export interface RedeemedReward {
+  id: string;
+  title: string;
+  cost: number;
+  icon: string;
+  redeemedAt: string; // ISO String date
+}
+
 export interface UserStats {
   points: number;
   tasksCompleted: number;

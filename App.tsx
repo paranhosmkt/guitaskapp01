@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
-import { Task, UserStats, Reward, SubTask, TaskStatus, ProjectLink, MonthlyGoal, Urgency } from './types';
+import { Task, UserStats, Reward, SubTask, TaskStatus, ProjectLink, MonthlyGoal, Urgency, RedeemedReward } from './types';
 
 const STORAGE_KEYS = {
   TASKS: 'guiflow_tasks_v3',
   COMPLETED_TASKS: 'guiflow_completed_tasks_v3',
   REWARDS: 'guiflow_rewards_v3',
+  REDEEMED_HISTORY: 'guiflow_redeemed_history_v3',
   STATS: 'guiflow_stats_v3',
   THEME: 'guiflow_theme_v3',
   MONTHLY_GOALS: 'guiflow_monthly_goals_v3',
@@ -127,6 +128,9 @@ const App: React.FC = () => {
       { id: '2', title: 'Episódio de Série', cost: 150, icon: 'play' }
     ];
   });
+  const [redeemedHistory, setRedeemedHistory] = useState<RedeemedReward[]>(() => 
+    JSON.parse(localStorage.getItem(STORAGE_KEYS.REDEEMED_HISTORY) || '[]')
+  );
   const [stats, setStats] = useState<UserStats>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.STATS) || '{"points":0,"tasksCompleted":0,"streak":1}'));
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem(STORAGE_KEYS.THEME) as 'light' | 'dark') || 'light');
   const [view, setView] = useState<'global' | 'local' | 'rewards' | 'history'>('global');
@@ -144,6 +148,7 @@ const App: React.FC = () => {
   const [pomodoroTime, setPomodoroTime] = useState(timerSettings.focus * 60);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [pomodoroMode, setPomodoroMode] = useState<'focus' | 'short' | 'long'>('focus');
+  const [pomodoroCycles, setPomodoroCycles] = useState(0);
   
   // Delta Time management
   const timerRef = useRef<number | null>(null);
@@ -165,10 +170,11 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
     localStorage.setItem(STORAGE_KEYS.COMPLETED_TASKS, JSON.stringify(completedTasks));
     localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(rewards));
+    localStorage.setItem(STORAGE_KEYS.REDEEMED_HISTORY, JSON.stringify(redeemedHistory));
     localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
     localStorage.setItem(STORAGE_KEYS.TIMER_SETTINGS, JSON.stringify(timerSettings));
     localStorage.setItem(STORAGE_KEYS.VIEW_PREFERENCE, isCompactMode ? 'compact' : 'expanded');
-  }, [tasks, completedTasks, rewards, stats, timerSettings, isCompactMode]);
+  }, [tasks, completedTasks, rewards, redeemedHistory, stats, timerSettings, isCompactMode]);
 
   // Delta Time Pomodoro Logic
   useEffect(() => {
@@ -196,9 +202,27 @@ const App: React.FC = () => {
             }
             
             if (nextTime === 0 && prev > 0) {
-              setIsTimerRunning(false);
+              // Timer Finished
               new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(() => {});
               confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+              
+              if (pomodoroMode === 'focus') {
+                 // Finished a Focus Session -> Auto Start Break
+                 const nextCycle = pomodoroCycles + 1;
+                 setPomodoroCycles(nextCycle);
+                 
+                 // Every 4th cycle is a long break
+                 const nextMode = nextCycle % 4 === 0 ? 'long' : 'short';
+                 setPomodoroMode(nextMode);
+                 
+                 // Immediately return the new time for the next mode and keep running
+                 return timerSettings[nextMode] * 60;
+              } else {
+                 // Finished a Break -> Stop and Reset to Focus
+                 setIsTimerRunning(false);
+                 setPomodoroMode('focus');
+                 return timerSettings.focus * 60;
+              }
             }
             return nextTime;
           });
@@ -215,7 +239,7 @@ const App: React.FC = () => {
     return () => {
       if (timerRef.current) cancelAnimationFrame(timerRef.current);
     };
-  }, [isTimerRunning, pomodoroMode, activeTaskId]);
+  }, [isTimerRunning, pomodoroMode, activeTaskId, pomodoroCycles, timerSettings]);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -277,6 +301,7 @@ const App: React.FC = () => {
     setView('local');
     setPomodoroMode('focus');
     setPomodoroTime(timerSettings.focus * 60);
+    setPomodoroCycles(0);
   };
 
   const handleCreateReward = () => {
@@ -348,6 +373,16 @@ const App: React.FC = () => {
   const redeemReward = (reward: Reward) => {
     if (stats.points >= reward.cost) {
       setStats(prev => ({ ...prev, points: prev.points - reward.cost }));
+      
+      const redemption: RedeemedReward = {
+        id: Date.now().toString(),
+        title: reward.title,
+        cost: reward.cost,
+        icon: reward.icon,
+        redeemedAt: new Date().toISOString()
+      };
+      setRedeemedHistory([redemption, ...redeemedHistory]);
+      
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.3 } });
       alert(`Recompensa "${reward.title}" resgatada! Aproveite.`);
     } else {
@@ -630,7 +665,7 @@ const App: React.FC = () => {
                         </button>
                      </div>
                      
-                     <div className="relative">
+                     <div className="relative flex flex-col items-center">
                         <div 
                           className={`${isCompactMode ? 'text-6xl' : 'text-9xl'} font-black tracking-tighter tabular-nums select-none transition-all duration-500 ${!isTimerRunning && (isDark ? 'text-slate-700' : 'text-slate-300')}`} 
                           style={{ 
@@ -639,13 +674,14 @@ const App: React.FC = () => {
                         >
                           {formatTime(pomodoroTime)}
                         </div>
+                        <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-2">Ciclo #{pomodoroCycles + 1}</span>
                      </div>
 
                      <div className="flex items-center gap-6">
                         <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`${isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all ${isTimerRunning ? 'bg-rose-500' : 'bg-indigo-600'}`}>
                            {isTimerRunning ? <Pause size={isCompactMode ? 24 : 40} fill="currentColor" /> : <Play size={isCompactMode ? 24 : 40} fill="currentColor" className="ml-1" />}
                         </button>
-                        <button onClick={() => { setIsTimerRunning(false); setPomodoroTime(timerSettings[pomodoroMode] * 60); accumulatedFocusSeconds.current = 0; }} className={`${isCompactMode ? 'w-12 h-12 rounded-2xl' : 'w-16 h-16 rounded-3xl'} bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-700`}>
+                        <button onClick={() => { setIsTimerRunning(false); setPomodoroTime(timerSettings[pomodoroMode] * 60); accumulatedFocusSeconds.current = 0; setPomodoroCycles(0); }} className={`${isCompactMode ? 'w-12 h-12 rounded-2xl' : 'w-16 h-16 rounded-3xl'} bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-700`}>
                            <RotateCcw size={isCompactMode ? 20 : 28} />
                         </button>
                      </div>
@@ -786,6 +822,41 @@ const App: React.FC = () => {
                    <p className="font-bold">Nenhum prêmio cadastrado.</p>
                 </div>
              )}
+
+             {/* Historic Section */}
+             <div className="col-span-full mt-10">
+                <div className="flex items-center gap-3 mb-6 px-4">
+                   <Receipt size={24} className="text-slate-400" />
+                   <h3 className="text-2xl font-black tracking-tight text-slate-400 uppercase">Histórico de Resgates</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {redeemedHistory.length > 0 ? (
+                    redeemedHistory.map(item => (
+                       <div key={item.id} className={`p-6 rounded-3xl border flex items-center justify-between opacity-60 hover:opacity-100 transition-opacity ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+                          <div className="flex items-center gap-4">
+                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center grayscale ${item.icon === 'coffee' ? 'bg-amber-100 text-amber-700' : item.icon === 'play' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                {item.icon === 'coffee' ? <Coffee size={20} /> : item.icon === 'play' ? <Play size={20} /> : <Gift size={20} />}
+                             </div>
+                             <div>
+                                <h4 className="font-black text-lg text-slate-500 dark:text-slate-400">{item.title}</h4>
+                                <p className="text-[10px] font-bold uppercase text-slate-400">
+                                   Resgatado em {new Date(item.redeemedAt).toLocaleDateString('pt-BR')} às {new Date(item.redeemedAt).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}
+                                </p>
+                             </div>
+                          </div>
+                          <div className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-500 font-black text-xs">
+                             -{item.cost} pts
+                          </div>
+                       </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-10 text-slate-400 italic font-medium border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[3rem]">
+                       Você ainda não resgatou nenhum prêmio.
+                    </div>
+                  )}
+                </div>
+             </div>
           </div>
         )}
       </main>
