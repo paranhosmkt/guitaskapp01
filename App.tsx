@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -370,6 +370,72 @@ const App: React.FC = () => {
     setView('history');
   };
 
+  const recoverTask = (taskId: string) => {
+    const task = completedTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    // Remove from completed
+    setCompletedTasks(prev => prev.filter(t => t.id !== taskId));
+    
+    // Add back to tasks with status todo and remove completed flag
+    setTasks(prev => [...prev, { ...task, completed: false, status: 'todo', completedAt: undefined }]);
+    
+    // Decrease completed count but keep XP points (optional choice, keeps users happy)
+    setStats(prev => ({ ...prev, tasksCompleted: Math.max(0, prev.tasksCompleted - 1) }));
+    
+    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 }, colors: ['#6366f1'] });
+  };
+
+  const duplicateTask = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    const newTask: Task = {
+        ...task,
+        id: Date.now().toString(),
+        title: `${task.title} (Cópia)`,
+        // Regenerate IDs for subtasks to ensure uniqueness
+        subTasks: task.subTasks.map(st => ({ ...st, id: Date.now().toString() + Math.random().toString() }))
+    };
+    setTasks([newTask, ...tasks]); // Add to top
+    confetti({ particleCount: 30, spread: 40, origin: { x: 0.5, y: 0.5 } });
+  };
+
+  const deleteTask = (e: React.MouseEvent, taskId: string) => {
+      e.stopPropagation();
+      if (window.confirm("Tem certeza que deseja excluir este objetivo permanentemente?")) {
+          setTasks(tasks.filter(t => t.id !== taskId));
+      }
+  };
+
+  const deleteSubTask = (e: React.MouseEvent, subId: string) => {
+      e.stopPropagation();
+      if (!activeTaskId) return;
+      if (window.confirm("Tem certeza que deseja remover esta atividade?")) {
+          setTasks(prev => prev.map(t => {
+              if (t.id === activeTaskId) {
+                  return { ...t, subTasks: t.subTasks.filter(s => s.id !== subId) };
+              }
+              return t;
+          }));
+      }
+  };
+
+  const duplicateSubTask = (e: React.MouseEvent, sub: SubTask) => {
+      e.stopPropagation();
+      if (!activeTaskId) return;
+      const newSub: SubTask = {
+          ...sub,
+          id: Date.now().toString() + Math.random().toString(),
+          title: `${sub.title} (Cópia)`
+      };
+      setTasks(prev => prev.map(t => {
+          if (t.id === activeTaskId) {
+              return { ...t, subTasks: [...t.subTasks, newSub] };
+          }
+          return t;
+      }));
+      confetti({ particleCount: 20, spread: 30, origin: { x: 0.5, y: 0.5 }, colors: ['#a855f7'] });
+  };
+
   const redeemReward = (reward: Reward) => {
     if (stats.points >= reward.cost) {
       setStats(prev => ({ ...prev, points: prev.points - reward.cost }));
@@ -507,7 +573,7 @@ const App: React.FC = () => {
                 <p className="text-sm font-bold text-slate-500 italic">Visualize o destino, não apenas os passos.</p>
               </div>
               <button onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
-                <Plus size={20} /> Novo Objetivo
+                <Plus size={20} /> Novo objetivo/projeto
               </button>
             </header>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -515,9 +581,17 @@ const App: React.FC = () => {
                  const taskProgress = task.subTasks.length > 0 ? Math.round((task.subTasks.filter(s => s.status === 'done').length / task.subTasks.length) * 100) : 0;
                  const deadlineInfo = getFormattedDeadline(task.dueDate);
                  return (
-                  <div key={task.id} onClick={() => { setActiveTaskId(task.id); setView('local'); }} className={`p-8 rounded-[3.5rem] border-2 transition-all cursor-pointer shadow-sm group flex flex-col justify-between h-80 hover:translate-y-[-4px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 hover:border-indigo-100'}`}>
+                  <div key={task.id} onClick={() => { setActiveTaskId(task.id); setView('local'); }} className={`p-8 rounded-[3.5rem] border-2 transition-all cursor-pointer shadow-sm group relative flex flex-col justify-between h-80 hover:translate-y-[-4px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 hover:border-indigo-100'}`}>
                     <div>
-                      <div className="flex flex-wrap items-center gap-2 mb-4">
+                      <div className="absolute top-6 right-6 flex gap-2">
+                         <button onClick={(e) => duplicateTask(e, task)} className="p-2 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition-all" title="Duplicar">
+                            <Copy size={16} />
+                         </button>
+                         <button onClick={(e) => deleteTask(e, task.id)} className="p-2 rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/50 text-slate-400 hover:text-rose-500 transition-all" title="Excluir">
+                            <Trash2 size={16} />
+                         </button>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 mb-4 pr-16">
                         <span className="text-[10px] font-black px-3 py-1 bg-indigo-600 text-white rounded-full uppercase flex items-center gap-1.5 shadow-sm">
                            <Clock size={12} /> {formatTotalTime(task.totalTimeSpent)}
                         </span>
@@ -561,7 +635,7 @@ const App: React.FC = () => {
             </header>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {completedTasks.map(task => (
-                <div key={task.id} className={`p-8 rounded-[3.5rem] border-2 shadow-sm flex flex-col justify-between h-80 opacity-90 transition-all hover:opacity-100 grayscale hover:grayscale-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+                <div key={task.id} className={`p-8 rounded-[3.5rem] border-2 shadow-sm flex flex-col justify-between h-80 opacity-90 transition-all hover:opacity-100 hover:shadow-lg ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-4">
                       <span className="text-[10px] font-black px-3 py-1 bg-emerald-600 text-white rounded-full uppercase flex items-center gap-1.5 shadow-sm">
@@ -576,7 +650,13 @@ const App: React.FC = () => {
                   </div>
                   <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                      <p className="text-[10px] font-black uppercase text-slate-400">Finalizado em:</p>
-                     <p className="text-xs font-black text-slate-600 dark:text-slate-300">{task.completedAt ? new Date(task.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Data não registrada'}</p>
+                     <p className="text-xs font-black text-slate-600 dark:text-slate-300 mb-3">{task.completedAt ? new Date(task.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Data não registrada'}</p>
+                     <button 
+                        onClick={(e) => { e.stopPropagation(); recoverTask(task.id); }}
+                        className="w-full py-2 rounded-xl border-2 border-dashed border-indigo-200 text-indigo-600 font-bold uppercase text-[10px] hover:bg-indigo-50 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
+                     >
+                        <RotateCcw size={14} /> Recuperar Objetivo
+                     </button>
                   </div>
                 </div>
               ))}
@@ -599,7 +679,7 @@ const App: React.FC = () => {
                    {progress === 100 && activeTask.subTasks.length > 0 && (
                       <button 
                         onClick={completeMacroTask}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-[#0f172a] text-white hover:bg-slate-800 shadow-md animate-in fade-in slide-in-from-right-2"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all bg-emerald-500 text-white hover:bg-emerald-600 shadow-md animate-in fade-in slide-in-from-right-2"
                       >
                         <CheckCircle size={14} /> Objetivo Concluído
                       </button>
@@ -742,6 +822,14 @@ const App: React.FC = () => {
                                           <h5 className="font-black text-lg leading-tight dark:text-white" style={{ color: isDark ? undefined : '#0f172a' }}>{sub.title}</h5>
                                           
                                         </div>
+                                     </div>
+                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={(e) => duplicateSubTask(e, sub)} className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Duplicar">
+                                           <Copy size={12} />
+                                        </button>
+                                        <button onClick={(e) => deleteSubTask(e, sub.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Excluir">
+                                           <Trash2 size={12} />
+                                        </button>
                                      </div>
                                   </div>
                                   
