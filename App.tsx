@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
-import { Task, UserStats, Reward, SubTask, TaskStatus, ProjectLink, MonthlyGoal } from './types';
+import { Task, UserStats, Reward, SubTask, TaskStatus, ProjectLink, MonthlyGoal, Urgency } from './types';
 
 const STORAGE_KEYS = {
   TASKS: 'guiflow_tasks_v3',
@@ -19,6 +19,20 @@ const STORAGE_KEYS = {
 };
 
 const STRIPE_LINK = 'https://buy.stripe.com/8x214o14E0FB8TF5NNcEw00';
+
+const URGENCY_CONFIG: Record<Urgency, { label: string, color: string, bg: string, icon: any }> = {
+  critical: { label: 'Urgente', color: 'text-rose-600', bg: 'bg-rose-100', icon: Flame },
+  high: { label: 'Alta', color: 'text-orange-600', bg: 'bg-orange-100', icon: AlertTriangle },
+  medium: { label: 'Média', color: 'text-blue-600', bg: 'bg-blue-100', icon: BatteryMedium },
+  low: { label: 'Baixa', color: 'text-emerald-600', bg: 'bg-emerald-100', icon: Coffee }
+};
+
+const URGENCY_POINTS: Record<Urgency, number> = {
+  low: 15,
+  medium: 30,
+  high: 50,
+  critical: 100
+};
 
 // Fixed: Moving helper components to the top to avoid "used before declaration" errors
 const NavItem = ({ active, onClick, icon, label, isDark }: any) => (
@@ -140,7 +154,7 @@ const App: React.FC = () => {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskContext, setNewTaskContext] = useState("");
   const [newTaskDeadline, setNewTaskDeadline] = useState(new Date().toISOString().split('T')[0]);
-  const [newSubTask, setNewSubTask] = useState({ title: '', notes: '', link: '', dueDate: '' });
+  const [newSubTask, setNewSubTask] = useState<{title: string, notes: string, link: string, dueDate: string, urgency: Urgency}>({ title: '', notes: '', link: '', dueDate: '', urgency: 'medium' });
   const [newRewardTitle, setNewRewardTitle] = useState("");
   const [newRewardCost, setNewRewardCost] = useState(50);
 
@@ -287,12 +301,13 @@ const App: React.FC = () => {
       notes: newSubTask.notes,
       link: newSubTask.link,
       dueDate: newSubTask.dueDate,
+      urgency: newSubTask.urgency,
       completed: false,
       status: 'todo',
-      rewardPoints: 10
+      rewardPoints: URGENCY_POINTS[newSubTask.urgency || 'medium']
     };
     setTasks(tasks.map(t => t.id === activeTaskId ? { ...t, subTasks: [...t.subTasks, sub] } : t));
-    setNewSubTask({ title: '', notes: '', link: '', dueDate: '' });
+    setNewSubTask({ title: '', notes: '', link: '', dueDate: '', urgency: 'medium' });
     setActiveModal(null);
   };
 
@@ -305,7 +320,7 @@ const App: React.FC = () => {
              const wasCompleted = s.status === 'done';
              const isNowCompleted = newStatus === 'done';
              if (!wasCompleted && isNowCompleted) {
-                setStats(p => ({ ...p, points: p.points + 10 }));
+                setStats(p => ({ ...p, points: p.points + s.rewardPoints }));
                 confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 } });
              }
              return { ...s, status: newStatus, completed: isNowCompleted };
@@ -338,6 +353,15 @@ const App: React.FC = () => {
     } else {
       alert("Pontos insuficientes!");
     }
+  };
+
+  const sortSubTasks = (tasks: SubTask[]) => {
+    const weights: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+    return [...tasks].sort((a, b) => {
+       const wA = weights[a.urgency || 'medium'] || 0;
+       const wB = weights[b.urgency || 'medium'] || 0;
+       return wB - wA;
+    });
   };
 
   const activeTask = tasks.find(t => t.id === activeTaskId) || null;
@@ -662,8 +686,9 @@ const App: React.FC = () => {
                          </div>
 
                          <div className="space-y-4">
-                            {activeTask.subTasks.filter(s => s.status === status).map(sub => {
+                            {sortSubTasks(activeTask.subTasks.filter(s => s.status === status)).map(sub => {
                                const deadlineInfo = getFormattedDeadline(sub.dueDate || "");
+                               const urgencyInfo = URGENCY_CONFIG[sub.urgency || 'medium'];
                                return (
                                <div 
                                  key={sub.id} 
@@ -677,13 +702,26 @@ const App: React.FC = () => {
                                   <div className="flex items-start justify-between mb-3">
                                      <div className="flex items-start gap-2">
                                         <GripVertical size={16} className="text-slate-300 mt-1 cursor-grab" />
-                                        <h5 className="font-black text-lg leading-tight dark:text-white" style={{ color: isDark ? undefined : '#0f172a' }}>{sub.title}</h5>
+                                        <div>
+                                          <h5 className="font-black text-lg leading-tight dark:text-white" style={{ color: isDark ? undefined : '#0f172a' }}>{sub.title}</h5>
+                                          
+                                        </div>
                                      </div>
                                   </div>
                                   
                                   {sub.notes && <p className="text-xs font-bold mb-3 line-clamp-3 leading-relaxed ml-6" style={{ color: '#a6a6a6' }}>{sub.notes}</p>}
                                   
                                   <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2 ml-6">
+                                     {/* Urgency Badge */}
+                                     <div className={`flex items-center gap-1 text-[9px] font-black uppercase px-2 py-1 rounded-md ${urgencyInfo.bg} ${urgencyInfo.color}`}>
+                                        <urgencyInfo.icon size={10} /> {urgencyInfo.label}
+                                     </div>
+
+                                     {/* XP Badge */}
+                                     <div className="flex items-center gap-1 text-[9px] font-black uppercase px-2 py-1 rounded-md bg-yellow-100 text-yellow-700">
+                                        <Star size={10} /> +{sub.rewardPoints} XP
+                                     </div>
+
                                      {deadlineInfo && (
                                         <div className={`flex items-center gap-1 text-[9px] font-black uppercase px-0 py-1 rounded-md ${deadlineInfo.color}`}>
                                            <Clock size={10} /> {deadlineInfo.text}
@@ -828,6 +866,27 @@ const App: React.FC = () => {
                  <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título da atividade</label>
                  <input autoFocus value={newSubTask.title} onChange={e => setNewSubTask({...newSubTask, title: e.target.value})} placeholder="Ex: Pesquisar referências" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
               </div>
+              
+              <div className="space-y-1">
+                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Nível de Urgência</label>
+                 <div className="flex gap-2">
+                    {Object.entries(URGENCY_CONFIG).reverse().map(([key, config]) => {
+                       const isSelected = newSubTask.urgency === key;
+                       const Icon = config.icon;
+                       return (
+                          <button
+                             key={key}
+                             onClick={() => setNewSubTask({ ...newSubTask, urgency: key as Urgency })}
+                             className={`flex-1 p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 ${isSelected ? `border-current ${config.color} ${config.bg}` : `border-transparent ${isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}`}
+                          >
+                             <Icon size={20} />
+                             <span className="text-[10px] font-black uppercase">{config.label}</span>
+                          </button>
+                       )
+                    })}
+                 </div>
+              </div>
+
               <div className="space-y-1">
                  <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Comentários / Notas</label>
                  <textarea value={newSubTask.notes} onChange={e => setNewSubTask({...newSubTask, notes: e.target.value})} placeholder="O que eu não posso esquecer?" rows={2} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />

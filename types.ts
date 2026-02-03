@@ -1,5 +1,6 @@
 export type Priority = 'low' | 'medium' | 'high';
 export type TaskStatus = 'todo' | 'doing' | 'done';
+export type Urgency = 'low' | 'medium' | 'high' | 'critical';
 
 export interface ProjectLink {
   id: string;
@@ -18,6 +19,7 @@ export interface SubTask {
   title: string;
   completed: boolean;
   status: TaskStatus;
+  urgency?: Urgency; // Nível de urgência da tarefa
   rewardPoints: number; // Points awarded when this specific sub-task is completed
   dueDate?: string; // Optional deadline for the sub-task
   notes?: string; // Comentário ou observação sobre a micro-tarefa
