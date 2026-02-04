@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen, BellRing
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -119,6 +119,20 @@ const CapybaraAvatar = ({ mood, className = "w-full h-full" }: { mood: string, c
             <path d="M46 48H54" stroke="#333" strokeWidth="2"/>
           </g>
       )}
+
+      {mood === 'hippie' && (
+          // Hippie Style: Headband + Round Glasses
+          <g>
+            {/* Headband */}
+            <path d="M20 32H80V38H20V32Z" fill="#F06292" stroke="#D81B60" strokeWidth="1"/>
+            <circle cx="50" cy="35" r="2" fill="#FFEB3B" />
+            
+            {/* Round Glasses */}
+            <circle cx="35" cy="48" r="9" stroke="#FFD54F" strokeWidth="2" fill="#E91E63" fillOpacity="0.2"/>
+            <circle cx="65" cy="48" r="9" stroke="#FFD54F" strokeWidth="2" fill="#E91E63" fillOpacity="0.2"/>
+            <path d="M44 48H56" stroke="#FFD54F" strokeWidth="2"/>
+          </g>
+      )}
     </svg>
   );
 };
@@ -129,6 +143,7 @@ const CAPY_OPTIONS = [
   { id: 'cool', label: 'Relax', bg: 'bg-blue-100', mood: 'cool' },
   { id: 'smart', label: 'Intelectual', bg: 'bg-indigo-100', mood: 'smart' },
   { id: 'love', label: 'Amável', bg: 'bg-rose-100', mood: 'love' },
+  { id: 'hippie', label: 'Hippie', bg: 'bg-lime-100', mood: 'hippie' },
 ];
 
 // Mock Data for Leaderboard
@@ -157,7 +172,7 @@ const Modal = ({ title, onClose, children, isDark }: any) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300 overflow-y-auto">
     <div className={`relative w-full max-w-lg rounded-[3.5rem] p-12 my-10 shadow-2xl animate-in zoom-in-95 fade-in duration-300 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
       <button onClick={onClose} className="absolute right-10 top-10 text-slate-400 hover:text-slate-600 hover:rotate-90 transition-all"><X size={28} /></button>
-      <h3 className="text-3xl font-black mb-10 tracking-tighter leading-tight text-slate-700 dark:text-slate-300">{title}</h3>
+      <h3 className={`text-3xl font-black mb-10 tracking-tighter leading-tight ${isDark ? 'text-white' : 'text-black'}`}>{title}</h3>
       {children}
     </div>
   </div>
@@ -302,7 +317,8 @@ const App: React.FC = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [pomodoroMode, setPomodoroMode] = useState<'focus' | 'short' | 'long'>('focus');
   const [pomodoroCycles, setPomodoroCycles] = useState(0);
-  
+  const [timerFinishedData, setTimerFinishedData] = useState<{ previousMode: string, nextMode: string } | null>(null);
+
   // Delta Time management
   const timerRef = useRef<number | null>(null);
   const lastTickTimestamp = useRef<number>(Date.now());
@@ -330,6 +346,51 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(isSidebarCollapsed));
   }, [tasks, completedTasks, rewards, redeemedHistory, stats, timerSettings, isCompactMode, isSidebarCollapsed]);
 
+  // Helper to play alarm sound
+  const playAlarm = () => {
+    const audio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    audio.play().catch(e => console.log("Audio play failed (user interaction needed)", e));
+    // Play again for emphasis
+    setTimeout(() => {
+       const audio2 = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+       audio2.play().catch(() => {});
+    }, 800);
+  };
+
+  // Helper to send browser notification
+  const notifyUser = (title: string, body: string) => {
+    if (Notification.permission === 'granted') {
+      new Notification(title, { body, icon: '/favicon.ico' });
+    }
+  };
+
+  // Toggle Timer with Permission Request
+  const toggleTimer = () => {
+    if (!isTimerRunning) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+    setIsTimerRunning(!isTimerRunning);
+  };
+
+  // Document Title Flasher
+  useEffect(() => {
+    if (isTimerRunning) {
+      document.title = `${formatTime(pomodoroTime)} - Guitask`;
+    } else if (activeModal === 'timerFinished') {
+      const interval = setInterval(() => {
+        document.title = document.title === '🔔 TEMPO ESGOTADO!' ? 'Guitask' : '🔔 TEMPO ESGOTADO!';
+      }, 1000);
+      return () => {
+        clearInterval(interval);
+        document.title = 'Guitask';
+      };
+    } else {
+      document.title = 'Guitask';
+    }
+  }, [isTimerRunning, pomodoroTime, activeModal]);
+
   // Delta Time Pomodoro Logic
   useEffect(() => {
     if (isTimerRunning) {
@@ -356,27 +417,38 @@ const App: React.FC = () => {
             }
             
             if (nextTime === 0 && prev > 0) {
-              // Timer Finished
-              new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(() => {});
-              confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+              // Timer Finished Logic
+              playAlarm();
+              confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+              setIsTimerRunning(false); // Stop the timer immediately
+              
+              let nextModeStr = '';
+              let nextModeType: 'focus' | 'short' | 'long' = 'focus';
               
               if (pomodoroMode === 'focus') {
-                 // Finished a Focus Session -> Auto Start Break
                  const nextCycle = pomodoroCycles + 1;
                  setPomodoroCycles(nextCycle);
-                 
-                 // Every 4th cycle is a long break
-                 const nextMode = nextCycle % 4 === 0 ? 'long' : 'short';
-                 setPomodoroMode(nextMode);
-                 
-                 // Immediately return the new time for the next mode and keep running
-                 return timerSettings[nextMode] * 60;
+                 const isLongBreak = nextCycle % 4 === 0;
+                 nextModeType = isLongBreak ? 'long' : 'short';
+                 nextModeStr = isLongBreak ? 'Descanso Longo' : 'Pausa Curta';
+                 notifyUser("Foco Concluído!", `Hora de uma ${nextModeStr}.`);
               } else {
-                 // Finished a Break -> Stop and Reset to Focus
-                 setIsTimerRunning(false);
-                 setPomodoroMode('focus');
-                 return timerSettings.focus * 60;
+                 nextModeType = 'focus';
+                 nextModeStr = 'Foco';
+                 notifyUser("Pausa Finalizada!", "Hora de voltar ao Foco.");
               }
+
+              // Update state for the next mode but don't start running yet
+              setPomodoroMode(nextModeType);
+              setPomodoroTime(timerSettings[nextModeType] * 60);
+              
+              setTimerFinishedData({ 
+                 previousMode: pomodoroMode === 'focus' ? 'Foco' : 'Pausa', 
+                 nextMode: nextModeStr 
+              });
+              setActiveModal('timerFinished');
+              
+              return 0;
             }
             return nextTime;
           });
@@ -1185,7 +1257,7 @@ const App: React.FC = () => {
                      </div>
 
                      <div className="flex items-center gap-6">
-                        <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`${isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all ${isTimerRunning ? 'bg-rose-500' : 'bg-indigo-600'}`}>
+                        <button onClick={toggleTimer} className={`${isCompactMode ? 'w-16 h-16' : 'w-24 h-24'} rounded-full flex items-center justify-center text-white shadow-2xl hover:scale-105 active:scale-95 transition-all ${isTimerRunning ? 'bg-rose-500' : 'bg-indigo-600'}`}>
                            {isTimerRunning ? <Pause size={isCompactMode ? 24 : 40} fill="currentColor" /> : <Play size={isCompactMode ? 24 : 40} fill="currentColor" className="ml-1" />}
                         </button>
                         <button onClick={() => { setIsTimerRunning(false); setPomodoroTime(timerSettings[pomodoroMode] * 60); accumulatedFocusSeconds.current = 0; setPomodoroCycles(0); }} className={`${isCompactMode ? 'w-12 h-12 rounded-2xl' : 'w-16 h-16 rounded-3xl'} bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center hover:text-indigo-600 transition-all border border-slate-200 dark:border-slate-700`}>
@@ -1377,6 +1449,35 @@ const App: React.FC = () => {
       </main>
 
       {/* Modals */}
+      {activeModal === 'timerFinished' && timerFinishedData && (
+         <Modal title="Ciclo Completo!" onClose={() => {}} isDark={isDark}>
+            <div className="flex flex-col items-center justify-center text-center space-y-6">
+               <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center animate-bounce">
+                  <BellRing size={48} />
+               </div>
+               <div>
+                  <h4 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-black'}`}>Tempo Esgotado!</h4>
+                  <p className="text-lg font-bold text-slate-500">
+                     O ciclo de <span className="text-indigo-600">{timerFinishedData.previousMode}</span> terminou.
+                  </p>
+               </div>
+               <div className="w-full p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700">
+                  <p className="text-xs font-black uppercase text-slate-400 mb-2">Próxima Etapa</p>
+                  <p className="text-3xl font-black text-indigo-600 dark:text-indigo-400 mb-6">{timerFinishedData.nextMode}</p>
+                  <button 
+                     onClick={() => {
+                        setActiveModal(null);
+                        setIsTimerRunning(true);
+                     }}
+                     className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                     <Play size={20} fill="currentColor" /> Iniciar {timerFinishedData.nextMode}
+                  </button>
+               </div>
+            </div>
+         </Modal>
+      )}
+
       {activeModal === 'createReward' && (
         <Modal title="Novo Prêmio" onClose={() => setActiveModal(null)} isDark={isDark}>
            <div className="space-y-6">
