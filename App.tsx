@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -35,6 +35,101 @@ const URGENCY_POINTS: Record<Urgency, number> = {
   critical: 100
 };
 
+// Capybara Avatar Component
+const CapybaraAvatar = ({ mood, className = "w-full h-full" }: { mood: string, className?: string }) => {
+  const skin = "#D4A373"; // Capy brown
+  const snout = "#A98467"; // Darker brown
+  const stroke = "#5D4037"; // Outline
+
+  return (
+    <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Background Circle (Optional, can be removed if handled by parent container) */}
+      
+      {/* Ears */}
+      <circle cx="25" cy="35" r="8" fill={skin} stroke={stroke} strokeWidth="2"/>
+      <circle cx="75" cy="35" r="8" fill={skin} stroke={stroke} strokeWidth="2"/>
+      
+      {/* Head */}
+      <rect x="20" y="30" width="60" height="55" rx="20" fill={skin} stroke={stroke} strokeWidth="2"/>
+      
+      {/* Snout Area */}
+      <rect x="35" y="58" width="30" height="20" rx="8" fill={snout} fillOpacity="0.6" />
+      
+      {/* Nostrils */}
+      <path d="M44 65Q45 63 46 65" stroke={stroke} strokeWidth="2" strokeLinecap="round"/>
+      <path d="M54 65Q55 63 56 65" stroke={stroke} strokeWidth="2" strokeLinecap="round"/>
+      
+      {/* Mouth */}
+      <path d="M48 70Q50 73 52 70" stroke={stroke} strokeWidth="2" strokeLinecap="round"/>
+
+      {/* Eyes Base */}
+      {mood !== 'cool' && (
+        <>
+          <circle cx="35" cy="48" r="4" fill="#333" />
+          <circle cx="65" cy="48" r="4" fill="#333" />
+          {/* Shine */}
+          <circle cx="37" cy="46" r="1.5" fill="white" />
+          <circle cx="67" cy="46" r="1.5" fill="white" />
+        </>
+      )}
+
+      {/* MOODS / ACCESSORIES */}
+      
+      {mood === 'king' && (
+         // Crown
+         <path d="M30 28L25 5L40 20L50 2L60 20L75 5L70 28H30Z" fill="#FFC107" stroke="#FF6F00" strokeWidth="2" strokeLinejoin="round"/>
+      )}
+      
+      {mood === 'coffee' && (
+         // Coffee Cup
+         <g transform="translate(60, 65) scale(0.8)">
+            <path d="M0 0H20V15C20 20.5228 15.5228 25 10 25C4.47715 25 0 20.5228 0 15V0Z" fill="#3E2723" stroke="white" strokeWidth="2"/>
+            <path d="M20 5H25C27.7614 5 30 7.23858 30 10C30 12.7614 27.7614 15 25 15H20" stroke="white" strokeWidth="2" fill="none"/>
+            {/* Steam */}
+            <path d="M5 -10Q10 -15 5 -20" stroke="#DDD" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+            <path d="M15 -8Q20 -13 15 -18" stroke="#DDD" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+         </g>
+      )}
+      
+      {mood === 'cool' && (
+         // Sunglasses
+         <g>
+           <rect x="25" y="42" width="22" height="12" rx="3" fill="#111" />
+           <rect x="53" y="42" width="22" height="12" rx="3" fill="#111" />
+           <line x1="47" y1="48" x2="53" y2="48" stroke="#111" strokeWidth="2" />
+           {/* Reflection */}
+           <line x1="28" y1="44" x2="35" y2="52" stroke="white" strokeWidth="1" opacity="0.3"/>
+           <line x1="56" y1="44" x2="63" y2="52" stroke="white" strokeWidth="1" opacity="0.3"/>
+         </g>
+      )}
+
+      {mood === 'love' && (
+         // Hearts eyes replaced or holding heart
+         <g transform="translate(75, 55) rotate(10)">
+            <path d="M10 5C10 0 5 0 2.5 2.5C0 0 -5 0 -5 5C-5 10 2.5 14 2.5 14C2.5 14 10 10 10 5Z" fill="#E91E63" stroke="#880E4F" strokeWidth="1"/>
+         </g>
+      )}
+
+      {mood === 'smart' && (
+          // Glasses
+          <g>
+            <circle cx="35" cy="48" r="11" stroke="#333" strokeWidth="2" fill="white" fillOpacity="0.2"/>
+            <circle cx="65" cy="48" r="11" stroke="#333" strokeWidth="2" fill="white" fillOpacity="0.2"/>
+            <path d="M46 48H54" stroke="#333" strokeWidth="2"/>
+          </g>
+      )}
+    </svg>
+  );
+};
+
+const CAPY_OPTIONS = [
+  { id: 'king', label: 'Líder', bg: 'bg-amber-100', mood: 'king' },
+  { id: 'coffee', label: 'Focado', bg: 'bg-emerald-100', mood: 'coffee' },
+  { id: 'cool', label: 'Relax', bg: 'bg-blue-100', mood: 'cool' },
+  { id: 'smart', label: 'Intelectual', bg: 'bg-indigo-100', mood: 'smart' },
+  { id: 'love', label: 'Amável', bg: 'bg-rose-100', mood: 'love' },
+];
+
 // Fixed: Moving helper components to the top to avoid "used before declaration" errors
 const NavItem = ({ active, onClick, icon, label, isDark }: any) => (
   <button onClick={onClick} className={`flex items-center gap-4 w-full px-5 py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-300 bg-indigo-950/40 shadow-inner' : 'text-indigo-600 bg-indigo-50 shadow-sm') : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
@@ -56,6 +151,8 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState('king');
   const [loading, setLoading] = useState(false);
   const isDark = theme === 'dark';
 
@@ -67,16 +164,27 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        if (!name.trim()) throw new Error("Por favor, digite seu nome.");
+        
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              full_name: name,
+              avatar_url: selectedAvatar
+            }
+          }
+        });
         if (error) throw error;
-        alert("Conta criada! Verifique seu e-mail.");
+        alert("Conta criada! Verifique seu e-mail para confirmar.");
       }
     } catch (err: any) { alert(err.message); } finally { setLoading(false); }
   };
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
-      <div className={`w-full max-w-[400px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+      <div className={`w-full max-w-[450px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="p-10 pb-6 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl mb-6 group hover:rotate-12 transition-transform duration-300">
             <Zap size={40} fill="currentColor" />
@@ -89,7 +197,34 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
             <button onClick={() => setMode('login')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-600 hover:text-indigo-600'}`}>Entrar</button>
             <button onClick={() => setMode('signup')} className={`flex-1 py-3 rounded-xl font-black text-xs uppercase transition-all duration-300 ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-600 hover:text-indigo-600'}`}>Cadastre-se</button>
           </div>
+          
           <form onSubmit={handleAuth} className="space-y-4">
+            {mode === 'signup' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Nome de usuário</label>
+                    <input type="text" placeholder="Como quer ser chamado?" value={name} onChange={e => setName(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400'}`} />
+                 </div>
+                 
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Escolha sua Capivara</label>
+                    <div className="flex justify-between gap-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-[2rem] border border-slate-100 dark:border-slate-700 overflow-x-auto">
+                      {CAPY_OPTIONS.map((av) => (
+                        <button
+                          key={av.id}
+                          type="button"
+                          onClick={() => setSelectedAvatar(av.id)}
+                          className={`min-w-[50px] h-[50px] p-1.5 rounded-2xl flex items-center justify-center transition-all border-2 ${selectedAvatar === av.id ? `${av.bg} border-indigo-600 shadow-md scale-110` : 'bg-white dark:bg-slate-700 border-transparent hover:bg-slate-100'}`}
+                          title={av.label}
+                        >
+                           <CapybaraAvatar mood={av.mood} />
+                        </button>
+                      ))}
+                    </div>
+                 </div>
+              </div>
+            )}
+
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase text-slate-500 ml-4">E-mail</label>
               <input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} required className={`w-full p-5 rounded-3xl border-2 font-bold outline-none transition-all focus:border-indigo-600 ${isDark ? 'bg-slate-800 border-slate-700 text-white placeholder:text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400'}`} />
@@ -270,7 +405,17 @@ const App: React.FC = () => {
   };
 
   const enterGuestMode = () => {
-    const guestSession = { user: { email: 'convidado@guitask.app', id: 'guest-id' }, isGuest: true };
+    const guestSession = { 
+      user: { 
+        email: 'convidado@guitask.app', 
+        id: 'guest-id',
+        user_metadata: {
+          full_name: 'Visitante',
+          avatar_url: 'king'
+        } 
+      }, 
+      isGuest: true 
+    };
     setSession(guestSession);
     localStorage.setItem(STORAGE_KEYS.GUEST_SESSION, JSON.stringify(guestSession));
   };
@@ -512,6 +657,14 @@ const App: React.FC = () => {
       return null;
     }
   };
+  
+  // Helper to get user avatar info
+  const userAvatar = useMemo(() => {
+     if (!session?.user?.user_metadata) return null;
+     const { avatar_url, full_name } = session.user.user_metadata;
+     const avatarConfig = CAPY_OPTIONS.find(a => a.id === avatar_url) || CAPY_OPTIONS[0];
+     return { config: avatarConfig, name: full_name?.split(' ')[0] || 'Usuário' };
+  }, [session]);
 
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Zap className="text-indigo-600 animate-bounce" size={48} /></div>;
   if (!session) return <AuthScreen theme={theme} onGuestAccess={enterGuestMode} />;
@@ -519,23 +672,40 @@ const App: React.FC = () => {
   return (
     <div className={`min-h-screen pb-24 md:pb-0 md:pl-64 flex flex-col transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:w-64 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl`}>
-        <div className="hidden md:flex flex-col items-start gap-10 mb-10 w-full">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg mt-1"><Zap size={22} fill="currentColor" /></div>
+        <div className="hidden md:flex flex-col items-start gap-8 mb-10 w-full h-full">
+          {/* TOP: Fixed Logo */}
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+               <Zap size={22} fill="currentColor" />
+            </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-xl font-black tracking-tighter leading-none">GUITASK</h1>
-              </div>
-              <p className="text-[10px] font-bold text-slate-500 mt-1">Clareza para mentes inquietas.</p>
+               <h1 className="text-3xl font-black tracking-tighter leading-none text-[#4b47df]">GUITASK</h1>
+               <p className="text-[10px] font-bold text-slate-400">Clareza para mentes inquietas.</p>
             </div>
           </div>
-          <div className="w-full space-y-2">
+
+          {/* MIDDLE: Nav Items */}
+          <div className="w-full space-y-2 flex-1">
             <NavItem active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
             <NavItem active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
             <NavItem active={view === 'history'} onClick={() => setView('history')} icon={<History size={20} />} label="Histórico" isDark={isDark} />
             <NavItem active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
           </div>
-          <div className="w-full mt-auto space-y-4">
+
+          {/* BOTTOM: User Info + Points + Logout */}
+          <div className="w-full space-y-4">
+            {userAvatar && (
+               <div className={`flex items-center gap-3 p-3 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+                  <div className={`w-10 h-10 ${userAvatar.config.bg} rounded-xl flex items-center justify-center text-white shadow-sm overflow-hidden p-1 min-w-[2.5rem]`}>
+                     <CapybaraAvatar mood={userAvatar.config.mood} />
+                  </div>
+                  <div className="overflow-hidden">
+                     <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-0.5">Olá,</p>
+                     <p className={`text-sm font-bold truncate ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{userAvatar.name}</p>
+                  </div>
+               </div>
+            )}
+            
             <div className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${isDark ? 'bg-indigo-950/20 border-indigo-900/50' : 'bg-indigo-50 border-indigo-100'}`}>
                <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
