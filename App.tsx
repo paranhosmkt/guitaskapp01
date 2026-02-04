@@ -196,20 +196,32 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
       </nav>
 
       {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center py-20 px-6 max-w-5xl mx-auto space-y-8 animate-in zoom-in-95 duration-1000">
-         <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] text-[#4c48e0]">
-            Clareza para mentes inquietas.
-         </h1>
-         <p className="text-lg md:text-xl font-medium text-slate-500 max-w-2xl leading-relaxed">
-            Veja o que precisa ser feito com clareza, saiba quanto tempo está trabalhando, organize sua vida, seus projetos, veja o andamento em tempo real de forma clara.
-         </p>
-         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
-            <button onClick={onStart} className="px-8 py-5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[2rem] font-black text-lg shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2">
-               Começar Agora <ChevronRight size={20} />
-            </button>
-            <button onClick={onStart} className="px-8 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] font-black text-lg text-slate-600 dark:text-slate-300 hover:border-indigo-600 hover:text-indigo-600 transition-all">
-               Ver Demonstração
-            </button>
+      <section className="flex-1 flex flex-col md:flex-row items-center justify-center py-12 md:py-20 px-6 max-w-7xl mx-auto gap-12 animate-in zoom-in-95 duration-1000">
+         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-8 z-10">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] text-[#4c48e0]">
+               Clareza para mentes inquietas.
+            </h1>
+            <p className="text-lg md:text-xl font-medium text-slate-500 max-w-2xl leading-relaxed">
+               Veja o que precisa ser feito com clareza, saiba quanto tempo está trabalhando, organize sua vida, seus projetos, veja o andamento em tempo real de forma clara.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-start pt-4">
+               <button onClick={onStart} className="px-8 py-5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[2rem] font-black text-lg shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2">
+                  Começar Agora <ChevronRight size={20} />
+               </button>
+               <button onClick={onStart} className="px-8 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] font-black text-lg text-slate-600 dark:text-slate-300 hover:border-indigo-600 hover:text-indigo-600 transition-all">
+                  Ver Demonstração
+               </button>
+            </div>
+         </div>
+         
+         {/* Gabi Image */}
+         <div className="flex-1 flex justify-center items-center relative">
+             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 blur-[80px] rounded-full" />
+             <img 
+               src="https://i.ibb.co/HfvZ2k8q/1.png" 
+               alt="Gabi" 
+               className="relative z-10 w-[280px] md:w-[480px] object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-700 hover:rotate-2" 
+             />
          </div>
       </section>
 
