@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen, BellRing
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen, BellRing, Sparkles, Brain, Rocket
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -178,6 +178,104 @@ const Modal = ({ title, onClose, children, isDark }: any) => (
   </div>
 );
 
+const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogin: () => void, isDark: boolean }) => {
+  return (
+    <div className={`min-h-screen flex flex-col ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} transition-all`}>
+      {/* Nav */}
+      <nav className="p-6 md:p-10 flex justify-between items-center max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-top-4 duration-700">
+         <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+               <Zap size={22} fill="currentColor" />
+            </div>
+            <h1 className="text-2xl font-black tracking-tighter leading-none text-indigo-600 hidden md:block">GUITASK</h1>
+         </div>
+         <div className="flex gap-4">
+            <button onClick={onLogin} className="text-sm font-black uppercase text-slate-500 hover:text-indigo-600 transition-colors">Entrar</button>
+            <button onClick={onStart} className="bg-indigo-600 text-white px-6 py-2.5 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 active:scale-95 transition-all">Criar Conta</button>
+         </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="flex-1 flex flex-col items-center justify-center text-center py-20 px-6 max-w-5xl mx-auto space-y-8 animate-in zoom-in-95 duration-1000">
+         <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] text-[#4c48e0]">
+            Clareza para mentes inquietas.
+         </h1>
+         <p className="text-lg md:text-xl font-medium text-slate-500 max-w-2xl leading-relaxed">
+            Veja o que precisa ser feito com clareza, saiba quanto tempo está trabalhando, organize sua vida, seus projetos, veja o andamento em tempo real de forma clara.
+         </p>
+         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center pt-4">
+            <button onClick={onStart} className="px-8 py-5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[2rem] font-black text-lg shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2">
+               Começar Agora <ChevronRight size={20} />
+            </button>
+            <button onClick={onStart} className="px-8 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] font-black text-lg text-slate-600 dark:text-slate-300 hover:border-indigo-600 hover:text-indigo-600 transition-all">
+               Ver Demonstração
+            </button>
+         </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="px-6 py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+               <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Target size={32} />
+               </div>
+               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Visão Dupla</h3>
+               <p className="text-slate-500 font-medium">Separe o "O que fazer" (Macro) do "Como fazer" (Micro). Evite a paralisia da análise focando em um passo de cada vez.</p>
+            </div>
+            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+               <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Trophy size={32} />
+               </div>
+               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Gamificação Real</h3>
+               <p className="text-slate-500 font-medium">Ganhe XP por cada tarefa. Use seus pontos para comprar recompensas reais que você mesmo define (café, séries, descanso).</p>
+            </div>
+            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+               <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Brain size={32} />
+               </div>
+               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Foco Adaptativo</h3>
+               <p className="text-slate-500 font-medium">Pomodoro integrado que respeita seu ritmo. Avatares de capivara que evoluem com seu humor e produtividade.</p>
+            </div>
+         </div>
+      </section>
+
+      {/* PRO CTA */}
+      <section className="px-6 py-24 bg-indigo-600 relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-full opacity-10">
+            <Zap className="absolute top-10 left-10 w-64 h-64 text-white rotate-12" />
+            <Star className="absolute bottom-10 right-10 w-48 h-48 text-white -rotate-12" />
+         </div>
+         <div className="max-w-4xl mx-auto text-center relative z-10 text-white space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 border border-white/30 backdrop-blur-md font-bold text-xs uppercase tracking-widest">
+               <Crown size={14} /> Guitask PRO
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight">Desbloqueie seu Potencial Máximo</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
+               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
+                  <CheckCircle className="text-amber-300" /> <span className="font-bold">Objetivos Ilimitados</span>
+               </div>
+               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
+                  <CheckCircle className="text-amber-300" /> <span className="font-bold">Subtarefas Infinitas</span>
+               </div>
+               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
+                  <CheckCircle className="text-amber-300" /> <span className="font-bold">Tag PRO no Ranking</span>
+               </div>
+            </div>
+            <button onClick={onStart} className="px-10 py-5 bg-white text-indigo-600 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
+               Testar Agora
+            </button>
+         </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest border-t border-slate-100 dark:border-slate-800">
+         <p>© {new Date().getFullYear()} Guitask. Clareza para mentes inquietas.</p>
+      </footer>
+    </div>
+  );
+};
+
 const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: () => void }) => {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
@@ -215,7 +313,7 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
-      <div className={`w-full max-w-[450px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+      <div className={`w-full max-w-[450px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 animate-in fade-in zoom-in-95 duration-300 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="p-10 pb-6 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl mb-6 group hover:rotate-12 transition-transform duration-300">
             <Zap size={40} fill="currentColor" />
@@ -284,6 +382,7 @@ const App: React.FC = () => {
   });
   const [authLoading, setAuthLoading] = useState(true);
   const [isPro, setIsPro] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
 
   const [tasks, setTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.TASKS) || '[]'));
   const [completedTasks, setCompletedTasks] = useState<Task[]>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPLETED_TASKS) || '[]'));
@@ -495,6 +594,7 @@ const App: React.FC = () => {
     await supabase.auth.signOut();
     setSession(null);
     setIsPro(false);
+    setShowLanding(true); // Reset landing page visibility on logout
     localStorage.removeItem(STORAGE_KEYS.GUEST_SESSION);
   };
 
@@ -847,10 +947,17 @@ const App: React.FC = () => {
   const currentLeaderboard = rankingTab === 'points' ? leaderboardData.byPoints : leaderboardData.byTime;
 
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Zap className="text-indigo-600 animate-bounce" size={48} /></div>;
-  if (!session) return <AuthScreen theme={theme} onGuestAccess={enterGuestMode} />;
+  
+  if (!session) {
+     if (showLanding) {
+        return <LandingPage onStart={() => setShowLanding(false)} onLogin={() => setShowLanding(false)} isDark={isDark} />;
+     }
+     return <AuthScreen theme={theme} onGuestAccess={enterGuestMode} />;
+  }
 
   return (
     <div className={`min-h-screen pb-24 md:pb-0 ${isSidebarCollapsed ? 'md:pl-24' : 'md:pl-64'} flex flex-col transition-all duration-300 ease-in-out ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      {/* Nav */}
       <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl transition-all duration-300 ease-in-out md:w-${isSidebarCollapsed ? '24' : '64'}`}>
         {/* Sidebar Toggle (Desktop Only) */}
         <button 
