@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -16,7 +16,8 @@ const STORAGE_KEYS = {
   MONTHLY_GOALS: 'guiflow_monthly_goals_v3',
   GUEST_SESSION: 'guiflow_guest_session',
   TIMER_SETTINGS: 'guiflow_timer_settings',
-  VIEW_PREFERENCE: 'guiflow_view_pref'
+  VIEW_PREFERENCE: 'guiflow_view_pref',
+  SIDEBAR_COLLAPSED: 'guiflow_sidebar_collapsed'
 };
 
 const STRIPE_LINK = 'https://buy.stripe.com/8x214o14E0FB8TF5NNcEw00';
@@ -130,10 +131,25 @@ const CAPY_OPTIONS = [
   { id: 'love', label: 'Amável', bg: 'bg-rose-100', mood: 'love' },
 ];
 
-// Fixed: Moving helper components to the top to avoid "used before declaration" errors
-const NavItem = ({ active, onClick, icon, label, isDark }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-4 w-full px-5 py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-300 bg-indigo-950/40 shadow-inner' : 'text-indigo-600 bg-indigo-50 shadow-sm') : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-    {icon} <span className="text-sm uppercase font-black tracking-tight">{label}</span>
+// Mock Data for Leaderboard
+const MOCK_USERS = [
+  { id: 'u1', name: 'Ana P.', avatar: 'coffee', bg: 'bg-emerald-100', points: 0, time: 0 },
+  { id: 'u2', name: 'Carlos M.', avatar: 'cool', bg: 'bg-blue-100', points: 0, time: 0 },
+  { id: 'u3', name: 'Beatriz L.', avatar: 'smart', bg: 'bg-indigo-100', points: 0, time: 0 },
+  { id: 'u4', name: 'João S.', avatar: 'king', bg: 'bg-amber-100', points: 0, time: 0 },
+  { id: 'u5', name: 'Fernanda R.', avatar: 'love', bg: 'bg-rose-100', points: 0, time: 0 },
+  { id: 'u6', name: 'Lucas T.', avatar: 'cool', bg: 'bg-blue-100', points: 0, time: 0 },
+  { id: 'u7', name: 'Mariana C.', avatar: 'smart', bg: 'bg-indigo-100', points: 0, time: 0 },
+];
+
+const NavItem = ({ active, onClick, icon, label, isDark, collapsed }: any) => (
+  <button 
+    onClick={onClick} 
+    title={collapsed ? label : undefined}
+    className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-4 px-5'} w-full py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-300 bg-indigo-950/40 shadow-inner' : 'text-indigo-600 bg-indigo-50 shadow-sm') : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+  >
+    <div className="min-w-[20px] flex justify-center">{icon}</div> 
+    {!collapsed && <span className="text-sm uppercase font-black tracking-tight whitespace-nowrap overflow-hidden transition-all duration-300 opacity-100">{label}</span>}
   </button>
 );
 
@@ -268,11 +284,13 @@ const App: React.FC = () => {
   );
   const [stats, setStats] = useState<UserStats>(() => JSON.parse(localStorage.getItem(STORAGE_KEYS.STATS) || '{"points":0,"tasksCompleted":0,"streak":1}'));
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem(STORAGE_KEYS.THEME) as 'light' | 'dark') || 'light');
-  const [view, setView] = useState<'global' | 'local' | 'rewards' | 'history'>('global');
+  const [view, setView] = useState<'global' | 'local' | 'rewards' | 'history' | 'ranking'>('global');
   const [isCompactMode, setIsCompactMode] = useState(() => localStorage.getItem(STORAGE_KEYS.VIEW_PREFERENCE) === 'compact');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED) === 'true');
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [rankingTab, setRankingTab] = useState<'points' | 'time'>('points');
   
   // Pomodoro Settings & State
   const [timerSettings, setTimerSettings] = useState(() => {
@@ -309,7 +327,8 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
     localStorage.setItem(STORAGE_KEYS.TIMER_SETTINGS, JSON.stringify(timerSettings));
     localStorage.setItem(STORAGE_KEYS.VIEW_PREFERENCE, isCompactMode ? 'compact' : 'expanded');
-  }, [tasks, completedTasks, rewards, redeemedHistory, stats, timerSettings, isCompactMode]);
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(isSidebarCollapsed));
+  }, [tasks, completedTasks, rewards, redeemedHistory, stats, timerSettings, isCompactMode, isSidebarCollapsed]);
 
   // Delta Time Pomodoro Logic
   useEffect(() => {
@@ -383,6 +402,9 @@ const App: React.FC = () => {
         if (currentSession) {
           setSession(currentSession);
           localStorage.removeItem(STORAGE_KEYS.GUEST_SESSION);
+          // Check Pro Status
+          const { data } = await supabase.from('profiles').select('is_pro').eq('id', currentSession.user.id).single();
+          if (data) setIsPro(data.is_pro);
         }
       } catch (err) { console.error("Auth init error:", err); }
       finally { setAuthLoading(false); }
@@ -421,6 +443,8 @@ const App: React.FC = () => {
   };
 
   const handleCreateMacro = () => {
+    if (!isPro && tasks.length >= 1) return; // Prevent creation via function if limit reached
+
     if (!newTaskTitle.trim()) return;
     const newTask: Task = {
       id: Date.now().toString(),
@@ -464,7 +488,11 @@ const App: React.FC = () => {
   };
 
   const handleAddSubTask = () => {
-    if (!newSubTask.title.trim() || !activeTaskId) return;
+    if (!activeTaskId) return;
+    const currentTask = tasks.find(t => t.id === activeTaskId);
+    if (!isPro && currentTask && currentTask.subTasks.length >= 1) return; // Prevent creation via function
+
+    if (!newSubTask.title.trim()) return;
     const sub: SubTask = {
       id: Date.now().toString(),
       title: newSubTask.title,
@@ -533,6 +561,11 @@ const App: React.FC = () => {
 
   const duplicateTask = (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
+    if (!isPro && tasks.length >= 1) {
+        alert("Versão gratuita permite apenas 1 objetivo ativo por vez. Atualize para PRO!");
+        return;
+    }
+
     const newTask: Task = {
         ...task,
         id: Date.now().toString(),
@@ -567,6 +600,12 @@ const App: React.FC = () => {
   const duplicateSubTask = (e: React.MouseEvent, sub: SubTask) => {
       e.stopPropagation();
       if (!activeTaskId) return;
+      const currentTask = tasks.find(t => t.id === activeTaskId);
+      if (!isPro && currentTask && currentTask.subTasks.length >= 1) {
+          alert("Versão gratuita permite apenas 1 atividade em foco por vez. Atualize para PRO!");
+          return;
+      }
+
       const newSub: SubTask = {
           ...sub,
           id: Date.now().toString() + Math.random().toString(),
@@ -627,7 +666,7 @@ const App: React.FC = () => {
   const formatTotalTime = (totalMinutes: number = 0) => {
     const h = Math.floor(totalMinutes / 60);
     const m = totalMinutes % 60;
-    return `${h.toString().padStart(2, '0')}h${m.toString().padStart(2, '0')}min`;
+    return `${h.toString().padStart(2, '0')}h${m.toString().padStart(2, '0')}`;
   };
 
   const changeMode = (mode: 'focus' | 'short' | 'long') => {
@@ -666,58 +705,161 @@ const App: React.FC = () => {
      return { config: avatarConfig, name: full_name?.split(' ')[0] || 'Usuário' };
   }, [session]);
 
+  // Ranking Calculation
+  const leaderboardData = useMemo(() => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Calculate User's Weekly Stats
+    // 1. Points: Sum rewards of macro tasks completed in the last 7 days + active work
+    // For simplicity in this demo, we'll use completedTasks list filter
+    let weeklyPoints = 0;
+    let weeklyTime = 0;
+
+    // From Completed Tasks (History)
+    completedTasks.forEach(t => {
+       if (t.completedAt && new Date(t.completedAt) > oneWeekAgo) {
+          weeklyPoints += t.rewardPoints;
+          weeklyTime += (t.totalTimeSpent || 0);
+       }
+    });
+
+    // From Active Tasks (Approximation: active tasks' totalTimeSpent counts towards this week for demo purposes)
+    tasks.forEach(t => {
+       weeklyTime += (t.totalTimeSpent || 0);
+       // We don't add points from active tasks as they are not "completed" yet to award points in this model, 
+       // but strictly speaking, subtasks award XP immediately. 
+       // Let's iterate subtasks to be precise if we wanted, but sticking to macro points for consistency with the prompt logic usually implies "score".
+       // However, we do award points on subtask completion.
+       t.subTasks.forEach(s => {
+          if(s.status === 'done') {
+             // If we had a timestamp for subtask completion, we'd filter. 
+             // We'll assume for this weekly view that active task subtask completions are recent.
+             weeklyPoints += s.rewardPoints;
+          }
+       });
+    });
+
+    const currentUser = {
+       id: 'me',
+       name: userAvatar ? userAvatar.name : 'Você',
+       avatar: userAvatar ? userAvatar.config.mood : 'king',
+       bg: userAvatar ? userAvatar.config.bg : 'bg-indigo-100',
+       points: weeklyPoints,
+       time: weeklyTime,
+       isMe: true,
+       isPro: isPro // Add status to ranking
+    };
+
+    // Generate Randomized Stats for Mock Users based on current user performance to keep it competitive
+    const basePoints = Math.max(100, weeklyPoints);
+    const baseTime = Math.max(60, weeklyTime);
+
+    const rankedUsers = MOCK_USERS.map(u => ({
+       ...u,
+       points: Math.floor(Math.random() * (basePoints * 1.5)) + 50,
+       time: Math.floor(Math.random() * (baseTime * 1.5)) + 30,
+       isPro: Math.random() > 0.6 // Randomly assign pro status to mock users
+    }));
+
+    // Add current user
+    const allUsers = [...rankedUsers, currentUser];
+
+    // Sort function depends on active tab, will handle in render or return both sorted lists
+    return {
+       byPoints: [...allUsers].sort((a, b) => b.points - a.points),
+       byTime: [...allUsers].sort((a, b) => b.time - a.time)
+    };
+  }, [tasks, completedTasks, userAvatar, isPro]);
+
+  const currentLeaderboard = rankingTab === 'points' ? leaderboardData.byPoints : leaderboardData.byTime;
+
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Zap className="text-indigo-600 animate-bounce" size={48} /></div>;
   if (!session) return <AuthScreen theme={theme} onGuestAccess={enterGuestMode} />;
 
   return (
-    <div className={`min-h-screen pb-24 md:pb-0 md:pl-64 flex flex-col transition-colors duration-300 ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:w-64 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl`}>
+    <div className={`min-h-screen pb-24 md:pb-0 ${isSidebarCollapsed ? 'md:pl-24' : 'md:pl-64'} flex flex-col transition-all duration-300 ease-in-out ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl transition-all duration-300 ease-in-out md:w-${isSidebarCollapsed ? '24' : '64'}`}>
+        {/* Sidebar Toggle (Desktop Only) */}
+        <button 
+           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+           className={`hidden md:flex absolute -right-3 top-12 bg-indigo-600 text-white p-1 rounded-full shadow-lg border-2 ${isDark ? 'border-slate-900' : 'border-slate-50'} z-50 hover:scale-110 transition-transform`}
+        >
+           {isSidebarCollapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+        </button>
+
         <div className="hidden md:flex flex-col items-start gap-8 mb-10 w-full h-full">
           {/* TOP: Fixed Logo */}
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+          <div className={`flex items-center gap-3 px-2 ${isSidebarCollapsed ? 'justify-center w-full' : ''}`}>
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
                <Zap size={22} fill="currentColor" />
             </div>
-            <div>
-               <h1 className="text-3xl font-black tracking-tighter leading-none text-[#4b47df]">GUITASK</h1>
-               <p className="text-[10px] font-bold text-slate-400">Clareza para mentes inquietas.</p>
-            </div>
+            {!isSidebarCollapsed && (
+               <div className="animate-in fade-in slide-in-from-left-4 duration-300">
+                  <h1 className="text-3xl font-black tracking-tighter leading-none text-[#4b47df]">GUITASK</h1>
+                  <p className="text-[10px] font-bold text-slate-400">Clareza para mentes inquietas.</p>
+               </div>
+            )}
           </div>
 
           {/* MIDDLE: Nav Items */}
           <div className="w-full space-y-2 flex-1">
-            <NavItem active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
-            <NavItem active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
-            <NavItem active={view === 'history'} onClick={() => setView('history')} icon={<History size={20} />} label="Histórico" isDark={isDark} />
-            <NavItem active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
+            <NavItem collapsed={isSidebarCollapsed} active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
+            <NavItem collapsed={isSidebarCollapsed} active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
+            <NavItem collapsed={isSidebarCollapsed} active={view === 'ranking'} onClick={() => setView('ranking')} icon={<Crown size={20} />} label="Ranking" isDark={isDark} />
+            <NavItem collapsed={isSidebarCollapsed} active={view === 'history'} onClick={() => setView('history')} icon={<History size={20} />} label="Histórico" isDark={isDark} />
+            <NavItem collapsed={isSidebarCollapsed} active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
           </div>
 
           {/* BOTTOM: User Info + Points + Logout */}
           <div className="w-full space-y-4">
             {userAvatar && (
-               <div className={`flex items-center gap-3 p-3 rounded-2xl border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
+               <div className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'} ${isSidebarCollapsed ? 'justify-center border-transparent bg-transparent' : ''}`}>
                   <div className={`w-10 h-10 ${userAvatar.config.bg} rounded-xl flex items-center justify-center text-white shadow-sm overflow-hidden p-1 min-w-[2.5rem]`}>
                      <CapybaraAvatar mood={userAvatar.config.mood} />
                   </div>
-                  <div className="overflow-hidden">
-                     <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-0.5">Olá,</p>
-                     <p className={`text-sm font-bold truncate ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{userAvatar.name}</p>
-                  </div>
+                  {!isSidebarCollapsed && (
+                     <div className="overflow-hidden flex-1 animate-in fade-in slide-in-from-left-2 duration-300">
+                        <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-0.5">Olá,</p>
+                        <div className="flex items-center gap-2">
+                           <p className={`text-sm font-bold truncate ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{userAvatar.name}</p>
+                           {isPro && (
+                              <span className="bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm tracking-wider">PRO</span>
+                           )}
+                        </div>
+                     </div>
+                  )}
                </div>
             )}
             
-            <div className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${isDark ? 'bg-indigo-950/20 border-indigo-900/50' : 'bg-indigo-50 border-indigo-100'}`}>
-               <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
-                     <Star size={16} fill="currentColor" />
+            {!isSidebarCollapsed ? (
+               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className={`p-4 rounded-2xl border flex items-center justify-between transition-all mb-4 ${isDark ? 'bg-indigo-950/20 border-indigo-900/50' : 'bg-indigo-50 border-indigo-100'}`}>
+                     <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+                           <Star size={16} fill="currentColor" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-indigo-600">Meus Pontos</span>
+                     </div>
+                     <span className="text-lg font-black tracking-tighter text-indigo-700 dark:text-indigo-400">{stats.points}</span>
                   </div>
-                  <span className="text-[10px] font-black uppercase text-indigo-600">Meus Pontos</span>
+                  <button onClick={handleLogout} className="w-full p-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 font-black text-xs uppercase flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors">
+                     <LogOut size={16} /> Sair
+                  </button>
                </div>
-               <span className="text-lg font-black tracking-tighter text-indigo-700 dark:text-indigo-400">{stats.points}</span>
-            </div>
-            <button onClick={handleLogout} className="w-full p-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 font-black text-xs uppercase flex items-center justify-center gap-2 hover:bg-rose-100 transition-colors">
-              <LogOut size={16} /> Sair
-            </button>
+            ) : (
+               <div className="flex flex-col gap-4 w-full animate-in fade-in duration-300">
+                  <div className="flex justify-center" title={`Pontos: ${stats.points}`}>
+                     <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm relative group cursor-help">
+                        <Star size={18} fill="currentColor" />
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[8px] font-bold text-amber-900 shadow-sm">{stats.points > 99 ? '99+' : stats.points}</span>
+                     </div>
+                  </div>
+                  <button onClick={handleLogout} className="w-full p-3 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all flex justify-center" title="Sair">
+                     <LogOut size={20} />
+                  </button>
+               </div>
+            )}
           </div>
         </div>
         <div className="flex md:hidden items-center justify-around w-full h-full px-4 relative">
@@ -725,7 +867,7 @@ const App: React.FC = () => {
            <button onClick={() => setView('local')} className={`p-2 rounded-xl ${view === 'local' ? 'text-indigo-600' : 'text-slate-500'}`}><Target size={24} /></button>
            <button onClick={() => setActiveModal('macro')} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
            <div className="relative group">
-              <button onClick={() => setView('rewards')} className={`p-2 rounded-xl ${view === 'rewards' ? 'text-indigo-600' : 'text-slate-500'}`}><Trophy size={24} /></button>
+              <button onClick={() => setView('ranking')} className={`p-2 rounded-xl ${view === 'ranking' ? 'text-indigo-600' : 'text-slate-500'}`}><Crown size={24} /></button>
               <div className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-white text-[8px] font-black rounded-full border border-white">
                 {stats.points}
               </div>
@@ -837,6 +979,121 @@ const App: React.FC = () => {
                    <p className="text-sm font-bold text-slate-500">Conclua seu primeiro objetivo para eternizá-lo aqui!</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {view === 'ranking' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-4xl mx-auto">
+            <header className="mb-10 flex flex-col items-center text-center">
+              <h2 className="text-4xl font-black tracking-tight mb-2">Ranking Semanal</h2>
+              <p className="text-sm font-bold text-slate-500 italic mb-6">Veja como você está se saindo em relação à comunidade!</p>
+              
+              <div className="flex p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-sm">
+                 <button 
+                   onClick={() => setRankingTab('points')} 
+                   className={`px-6 py-2 rounded-xl font-black text-xs uppercase transition-all flex items-center gap-2 ${rankingTab === 'points' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                 >
+                    <Star size={14} /> Maior Pontuação
+                 </button>
+                 <button 
+                   onClick={() => setRankingTab('time')} 
+                   className={`px-6 py-2 rounded-xl font-black text-xs uppercase transition-all flex items-center gap-2 ${rankingTab === 'time' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
+                 >
+                    <Clock size={14} /> Mais Tempo Focado
+                 </button>
+              </div>
+            </header>
+
+            <div className="space-y-6">
+              {/* Podium */}
+              <div className="flex items-end justify-center gap-4 mb-12 min-h-[220px]">
+                 {currentLeaderboard[1] && (
+                    <div className="flex flex-col items-center animate-in slide-in-from-bottom-8 duration-700 delay-100">
+                       <div className="mb-2 relative">
+                          <div className={`w-16 h-16 rounded-2xl ${currentLeaderboard[1].bg} flex items-center justify-center border-4 border-slate-300 shadow-xl overflow-hidden`}>
+                             <CapybaraAvatar mood={currentLeaderboard[1].avatar} />
+                          </div>
+                          <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-300 text-slate-600 font-black flex items-center justify-center border-2 border-white shadow-sm">2</div>
+                       </div>
+                       <div className="flex items-center gap-1 mb-1">
+                          <p className="text-xs font-black text-slate-500">{currentLeaderboard[1].name}</p>
+                          {(currentLeaderboard[1] as any).isPro && <span className="bg-amber-400 text-white text-[8px] font-black px-1 rounded">PRO</span>}
+                       </div>
+                       <div className="py-2 px-4 bg-slate-100 dark:bg-slate-800 rounded-xl font-black text-indigo-600 text-sm">
+                          {rankingTab === 'points' ? currentLeaderboard[1].points : formatTotalTime(currentLeaderboard[1].time)}
+                       </div>
+                       <div className="w-20 h-24 bg-slate-200/50 dark:bg-slate-800/50 rounded-t-2xl mt-2" />
+                    </div>
+                 )}
+
+                 {currentLeaderboard[0] && (
+                    <div className="flex flex-col items-center z-10 animate-in slide-in-from-bottom-8 duration-700">
+                       <Crown size={32} className="text-amber-400 mb-2 animate-bounce" fill="currentColor" />
+                       <div className="mb-2 relative">
+                          <div className={`w-24 h-24 rounded-3xl ${currentLeaderboard[0].bg} flex items-center justify-center border-4 border-amber-400 shadow-2xl overflow-hidden scale-110`}>
+                             <CapybaraAvatar mood={currentLeaderboard[0].avatar} />
+                          </div>
+                          <div className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-amber-400 text-amber-900 font-black flex items-center justify-center border-4 border-white shadow-sm text-lg">1</div>
+                       </div>
+                       <div className="flex items-center gap-1 mb-1">
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200">{currentLeaderboard[0].name}</p>
+                          {(currentLeaderboard[0] as any).isPro && <span className="bg-amber-400 text-white text-[9px] font-black px-1 rounded">PRO</span>}
+                       </div>
+                       <div className="py-2 px-6 bg-indigo-600 text-white rounded-xl font-black text-base shadow-lg mb-2">
+                          {rankingTab === 'points' ? currentLeaderboard[0].points : formatTotalTime(currentLeaderboard[0].time)}
+                       </div>
+                       <div className="w-24 h-32 bg-amber-100/50 dark:bg-amber-900/20 rounded-t-3xl" />
+                    </div>
+                 )}
+
+                 {currentLeaderboard[2] && (
+                    <div className="flex flex-col items-center animate-in slide-in-from-bottom-8 duration-700 delay-200">
+                       <div className="mb-2 relative">
+                          <div className={`w-16 h-16 rounded-2xl ${currentLeaderboard[2].bg} flex items-center justify-center border-4 border-amber-700/40 shadow-xl overflow-hidden`}>
+                             <CapybaraAvatar mood={currentLeaderboard[2].avatar} />
+                          </div>
+                          <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-700/40 text-amber-900 font-black flex items-center justify-center border-2 border-white shadow-sm">3</div>
+                       </div>
+                       <div className="flex items-center gap-1 mb-1">
+                          <p className="text-xs font-black text-slate-500">{currentLeaderboard[2].name}</p>
+                          {(currentLeaderboard[2] as any).isPro && <span className="bg-amber-400 text-white text-[8px] font-black px-1 rounded">PRO</span>}
+                       </div>
+                       <div className="py-2 px-4 bg-slate-100 dark:bg-slate-800 rounded-xl font-black text-indigo-600 text-sm">
+                          {rankingTab === 'points' ? currentLeaderboard[2].points : formatTotalTime(currentLeaderboard[2].time)}
+                       </div>
+                       <div className="w-20 h-16 bg-amber-900/10 dark:bg-amber-900/30 rounded-t-2xl mt-2" />
+                    </div>
+                 )}
+              </div>
+
+              {/* List */}
+              <div className="space-y-3">
+                 {currentLeaderboard.slice(3).map((user, index) => (
+                    <div 
+                      key={user.id} 
+                      className={`flex items-center gap-4 p-4 rounded-3xl border-2 transition-all ${user.isMe ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800' : 'bg-white border-slate-100 dark:bg-slate-900 dark:border-slate-800'}`}
+                    >
+                       <div className="w-8 font-black text-slate-400 text-center">#{index + 4}</div>
+                       <div className={`w-12 h-12 rounded-xl ${user.bg} flex items-center justify-center p-1`}>
+                          <CapybaraAvatar mood={user.avatar} />
+                       </div>
+                       <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className={`font-bold ${user.isMe ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                               {user.name} {user.isMe && '(Você)'}
+                            </p>
+                            {(user as any).isPro && (
+                               <span className="bg-gradient-to-r from-amber-400 to-amber-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-sm tracking-wider">PRO</span>
+                            )}
+                          </div>
+                       </div>
+                       <div className="font-black text-slate-600 dark:text-slate-400">
+                          {rankingTab === 'points' ? user.points : formatTotalTime(user.time)}
+                       </div>
+                    </div>
+                 ))}
+              </div>
             </div>
           </div>
         )}
@@ -1170,73 +1427,128 @@ const App: React.FC = () => {
 
       {activeModal === 'macro' && (
         <Modal title="Defina seu objetivo" onClose={() => setActiveModal(null)} isDark={isDark}>
-           <div className="space-y-6">
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título do objetivo</label>
-                 <input autoFocus value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Ex: Lançar meu projeto novo" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
-              </div>
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Contexto rápido</label>
-                 <textarea value={newTaskContext} onChange={e => setNewTaskContext(e.target.value)} placeholder="O que torna isso importante?" rows={3} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
-              </div>
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo final</label>
-                 <input type="date" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
-              </div>
-              <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Criar</button>
-           </div>
+           {!isPro && tasks.length >= 1 ? (
+             <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-4">
+                   <Lock size={40} />
+                </div>
+                <div>
+                   <h4 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-2">Limite Gratuito Atingido</h4>
+                   <p className="text-sm font-bold text-slate-500">Usuários gratuitos podem gerenciar apenas 1 objetivo macro por vez.</p>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-3">O que o plano PRO desbloqueia:</p>
+                   <ul className="text-left space-y-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Objetivos Ilimitados</li>
+                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Sub-tarefas Ilimitadas</li>
+                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Tag exclusiva PRO no ranking</li>
+                   </ul>
+                </div>
+                <a 
+                   href={STRIPE_LINK} 
+                   target="_blank" 
+                   rel="noreferrer"
+                   className="block w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-black text-base shadow-xl hover:scale-[1.02] transition-transform"
+                >
+                   Tornar-se PRO agora
+                </a>
+             </div>
+           ) : (
+             <div className="space-y-6">
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título do objetivo</label>
+                   <input autoFocus value={newTaskTitle} onChange={e => setNewTaskTitle(e.target.value)} placeholder="Ex: Lançar meu projeto novo" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Contexto rápido</label>
+                   <textarea value={newTaskContext} onChange={e => setNewTaskContext(e.target.value)} placeholder="O que torna isso importante?" rows={3} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                </div>
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo final</label>
+                   <input type="date" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                </div>
+                <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Criar</button>
+             </div>
+           )}
         </Modal>
       )}
 
       {activeModal === 'subtask' && (
         <Modal title="Adicionar atividade" onClose={() => setActiveModal(null)} isDark={isDark}>
-           <div className="space-y-6">
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título da atividade</label>
-                 <input autoFocus value={newSubTask.title} onChange={e => setNewSubTask({...newSubTask, title: e.target.value})} placeholder="Ex: Pesquisar referências" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
-              </div>
-              
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Nível de Urgência</label>
-                 <div className="flex gap-2">
-                    {Object.entries(URGENCY_CONFIG).reverse().map(([key, config]) => {
-                       const isSelected = newSubTask.urgency === key;
-                       const Icon = config.icon;
-                       return (
-                          <button
-                             key={key}
-                             onClick={() => setNewSubTask({ ...newSubTask, urgency: key as Urgency })}
-                             className={`flex-1 p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 ${isSelected ? `border-current ${config.color} ${config.bg}` : `border-transparent ${isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}`}
-                          >
-                             <Icon size={20} />
-                             <span className="text-[10px] font-black uppercase">{config.label}</span>
-                          </button>
-                       )
-                    })}
-                 </div>
-              </div>
+           {(!isPro && activeTask && activeTask.subTasks.length >= 1) ? (
+             <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-4">
+                   <Lock size={40} />
+                </div>
+                <div>
+                   <h4 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-2">Foco Máximo Atingido</h4>
+                   <p className="text-sm font-bold text-slate-500">Para manter o foco, o plano gratuito permite apenas 1 atividade simultânea por objetivo.</p>
+                </div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-3">Libere seu potencial com o PRO:</p>
+                   <ul className="text-left space-y-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Adicione quantas tarefas precisar</li>
+                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Gerencie múltiplos projetos</li>
+                   </ul>
+                </div>
+                <a 
+                   href={STRIPE_LINK} 
+                   target="_blank" 
+                   rel="noreferrer"
+                   className="block w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-black text-base shadow-xl hover:scale-[1.02] transition-transform"
+                >
+                   Desbloquear Tudo
+                </a>
+             </div>
+           ) : (
+             <div className="space-y-6">
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Título da atividade</label>
+                   <input autoFocus value={newSubTask.title} onChange={e => setNewSubTask({...newSubTask, title: e.target.value})} placeholder="Ex: Pesquisar referências" className={`w-full p-5 border-2 rounded-3xl font-bold text-lg outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                </div>
+                
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Nível de Urgência</label>
+                   <div className="flex gap-2">
+                      {Object.entries(URGENCY_CONFIG).reverse().map(([key, config]) => {
+                         const isSelected = newSubTask.urgency === key;
+                         const Icon = config.icon;
+                         return (
+                            <button
+                               key={key}
+                               onClick={() => setNewSubTask({ ...newSubTask, urgency: key as Urgency })}
+                               className={`flex-1 p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-1 ${isSelected ? `border-current ${config.color} ${config.bg}` : `border-transparent ${isDark ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}`}
+                            >
+                               <Icon size={20} />
+                               <span className="text-[10px] font-black uppercase">{config.label}</span>
+                            </button>
+                         )
+                      })}
+                   </div>
+                </div>
 
-              <div className="space-y-1">
-                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Comentários / Notas</label>
-                 <textarea value={newSubTask.notes} onChange={e => setNewSubTask({...newSubTask, notes: e.target.value})} placeholder="O que eu não posso esquecer?" rows={2} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo</label>
-                   <input 
-                      type="date" 
-                      value={newSubTask.dueDate} 
-                      onChange={e => setNewSubTask({ ...newSubTask, dueDate: e.target.value })} 
-                      className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
-                   />
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Comentários / Notas</label>
+                   <textarea value={newSubTask.notes} onChange={e => setNewSubTask({...newSubTask, notes: e.target.value})} placeholder="O que eu não posso esquecer?" rows={2} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
-                <div className="space-y-1">
-                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Link relacionado</label>
-                   <input value={newSubTask.link} onChange={e => setNewSubTask({...newSubTask, link: e.target.value})} placeholder="URL aqui..." className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                     <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo</label>
+                     <input 
+                        type="date" 
+                        value={newSubTask.dueDate} 
+                        onChange={e => setNewSubTask({ ...newSubTask, dueDate: e.target.value })} 
+                        className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
+                     />
+                  </div>
+                  <div className="space-y-1">
+                     <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Link relacionado</label>
+                     <input value={newSubTask.link} onChange={e => setNewSubTask({...newSubTask, link: e.target.value})} placeholder="URL aqui..." className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                  </div>
                 </div>
-              </div>
-              <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Adicionar ao Plano</button>
-           </div>
+                <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Adicionar ao Plano</button>
+             </div>
+           )}
         </Modal>
       )}
 
