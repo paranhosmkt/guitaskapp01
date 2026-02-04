@@ -183,11 +183,11 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
     <div className={`min-h-screen flex flex-col ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} transition-all`}>
       {/* Nav */}
       <nav className="p-6 md:p-10 flex justify-between items-center max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-top-4 duration-700">
-         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
-               <Zap size={22} fill="currentColor" />
+         <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
+               <Zap size={32} fill="currentColor" />
             </div>
-            <h1 className="text-2xl font-black tracking-tighter leading-none text-indigo-600 hidden md:block">GUITASK</h1>
+            <h1 className="text-4xl font-black tracking-tighter leading-none text-indigo-600 hidden md:block">GUITASK</h1>
          </div>
          <div className="flex gap-4">
             <button onClick={onLogin} className="text-sm font-black uppercase text-slate-500 hover:text-indigo-600 transition-colors">Entrar</button>
