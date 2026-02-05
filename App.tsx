@@ -227,27 +227,34 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
 
       {/* Features Grid */}
       <section className="px-6 py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
-         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Target size={32} />
                </div>
                <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Visão Dupla</h3>
-               <p className="text-slate-500 font-medium">Separe o "O que fazer" (Macro) do "Como fazer" (Micro). Evite a paralisia da análise focando em um passo de cada vez.</p>
+               <p className="text-slate-500 font-medium">Separe o "O que fazer" (Macro) do "Como fazer" (Micro). Evite a paralisia da análise.</p>
             </div>
             <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
                <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Trophy size={32} />
                </div>
-               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Gamificação Real</h3>
-               <p className="text-slate-500 font-medium">Ganhe XP por cada tarefa. Use seus pontos para comprar recompensas reais que você mesmo define (café, séries, descanso).</p>
+               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Gamificação</h3>
+               <p className="text-slate-500 font-medium">Ganhe XP por cada tarefa. Troque pontos por recompensas reais que você define.</p>
+            </div>
+            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+               <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Crown size={32} />
+               </div>
+               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Ranking Semanal</h3>
+               <p className="text-slate-500 font-medium">Competição saudável que motiva. Suba no pódio e mostre sua consistência.</p>
             </div>
             <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Brain size={32} />
                </div>
                <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Foco Adaptativo</h3>
-               <p className="text-slate-500 font-medium">Pomodoro integrado que respeita seu ritmo. Avatares de capivara que evoluem com seu humor e produtividade.</p>
+               <p className="text-slate-500 font-medium">Pomodoro integrado com avatares de capivara que evoluem com você.</p>
             </div>
          </div>
       </section>
@@ -274,9 +281,16 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
                   <CheckCircle className="text-amber-300" /> <span className="font-bold">Tag PRO no Ranking</span>
                </div>
             </div>
-            <button onClick={onStart} className="px-10 py-5 bg-white text-indigo-600 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
-               Testar Agora
-            </button>
+            
+            <div className="flex flex-col items-center gap-1 pt-4">
+                <p className="text-indigo-200 font-bold uppercase text-xs tracking-widest">A partir de</p>
+                <p className="text-5xl font-black text-white tracking-tighter mb-6">
+                   R$ 29,90<span className="text-xl font-bold text-indigo-200">/mês</span>
+                </p>
+                <button onClick={onStart} className="px-10 py-5 bg-white text-indigo-600 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
+                   Testar Agora
+                </button>
+            </div>
          </div>
       </section>
 
