@@ -1265,10 +1265,10 @@ const App: React.FC = () => {
         {view === 'ranking' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-4xl mx-auto">
             <header className="mb-10 flex flex-col items-center text-center">
-              <h2 className="text-4xl font-black tracking-tight mb-2">Ranking Semanal</h2>
+              <h2 className="text-4xl font-black tracking-tight mb-2 text-slate-900 dark:text-white">Ranking Semanal</h2>
               <p className="text-sm font-bold text-slate-500 italic mb-6">Veja como você está se saindo em relação à comunidade!</p>
               
-              <div className="flex p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-sm">
+              <div className="flex p-1.5 rounded-2xl border border-slate-100 bg-white shadow-sm">
                  <button 
                    onClick={() => setRankingTab('points')} 
                    className={`px-6 py-2 rounded-xl font-black text-xs uppercase transition-all flex items-center gap-2 ${rankingTab === 'points' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:text-indigo-600'}`}
@@ -1290,7 +1290,7 @@ const App: React.FC = () => {
                  {currentLeaderboard[1] && (
                     <div className="flex flex-col items-center animate-in slide-in-from-bottom-8 duration-700 delay-100">
                        <div className="mb-2 relative">
-                          <div className={`w-16 h-16 rounded-2xl ${currentLeaderboard[1].bg} flex items-center justify-center border-4 border-slate-300 shadow-xl overflow-hidden`}>
+                          <div className={`w-16 h-16 rounded-2xl ${currentLeaderboard[1].bg} flex items-center justify-center border-4 border-slate-300 bg-white shadow-xl overflow-hidden`}>
                              <CapybaraAvatar mood={currentLeaderboard[1].avatar} />
                           </div>
                           <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-300 text-slate-600 font-black flex items-center justify-center border-2 border-white shadow-sm">2</div>
@@ -1299,10 +1299,10 @@ const App: React.FC = () => {
                           <p className="text-xs font-black text-slate-500">{currentLeaderboard[1].name}</p>
                           {(currentLeaderboard[1] as any).isPro && <span className="bg-amber-400 text-white text-[8px] font-black px-1 rounded">PRO</span>}
                        </div>
-                       <div className="py-2 px-4 bg-slate-100 dark:bg-slate-800 rounded-xl font-black text-indigo-600 text-sm">
+                       <div className="py-2 px-4 bg-white border border-slate-200 rounded-xl font-black text-slate-900 text-sm shadow-sm">
                           {rankingTab === 'points' ? currentLeaderboard[1].points : formatTotalTime(currentLeaderboard[1].time)}
                        </div>
-                       <div className="w-20 h-24 bg-slate-200/50 dark:bg-slate-800/50 rounded-t-2xl mt-2" />
+                       <div className="w-20 h-24 bg-slate-200 rounded-t-2xl mt-2 border-t-4 border-slate-300" />
                     </div>
                  )}
 
@@ -1310,38 +1310,38 @@ const App: React.FC = () => {
                     <div className="flex flex-col items-center z-10 animate-in slide-in-from-bottom-8 duration-700">
                        <Crown size={32} className="text-amber-400 mb-2 animate-bounce" fill="currentColor" />
                        <div className="mb-2 relative">
-                          <div className={`w-24 h-24 rounded-3xl ${currentLeaderboard[0].bg} flex items-center justify-center border-4 border-amber-400 shadow-2xl overflow-hidden scale-110`}>
+                          <div className={`w-24 h-24 rounded-3xl ${currentLeaderboard[0].bg} flex items-center justify-center border-4 border-amber-400 bg-white shadow-2xl overflow-hidden scale-110 shadow-amber-200/50`}>
                              <CapybaraAvatar mood={currentLeaderboard[0].avatar} />
                           </div>
                           <div className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-amber-400 text-amber-900 font-black flex items-center justify-center border-4 border-white shadow-sm text-lg">1</div>
                        </div>
                        <div className="flex items-center gap-1 mb-1">
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200">{currentLeaderboard[0].name}</p>
+                          <p className="text-sm font-black text-slate-900">{currentLeaderboard[0].name}</p>
                           {(currentLeaderboard[0] as any).isPro && <span className="bg-amber-400 text-white text-[9px] font-black px-1 rounded">PRO</span>}
                        </div>
                        <div className="py-2 px-6 bg-indigo-600 text-white rounded-xl font-black text-base shadow-lg mb-2">
                           {rankingTab === 'points' ? currentLeaderboard[0].points : formatTotalTime(currentLeaderboard[0].time)}
                        </div>
-                       <div className="w-24 h-32 bg-amber-100/50 dark:bg-amber-900/20 rounded-t-3xl" />
+                       <div className="w-24 h-32 bg-amber-300 rounded-t-3xl border-t-4 border-amber-400 shadow-[0_0_40px_-10px_rgba(251,191,36,0.6)]" />
                     </div>
                  )}
 
                  {currentLeaderboard[2] && (
                     <div className="flex flex-col items-center animate-in slide-in-from-bottom-8 duration-700 delay-200">
                        <div className="mb-2 relative">
-                          <div className={`w-16 h-16 rounded-2xl ${currentLeaderboard[2].bg} flex items-center justify-center border-4 border-amber-700/40 shadow-xl overflow-hidden`}>
+                          <div className={`w-16 h-16 rounded-2xl ${currentLeaderboard[2].bg} flex items-center justify-center border-4 border-amber-700/30 bg-white shadow-xl overflow-hidden`}>
                              <CapybaraAvatar mood={currentLeaderboard[2].avatar} />
                           </div>
-                          <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-700/40 text-amber-900 font-black flex items-center justify-center border-2 border-white shadow-sm">3</div>
+                          <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-amber-700/30 text-amber-900 font-black flex items-center justify-center border-2 border-white shadow-sm">3</div>
                        </div>
                        <div className="flex items-center gap-1 mb-1">
                           <p className="text-xs font-black text-slate-500">{currentLeaderboard[2].name}</p>
                           {(currentLeaderboard[2] as any).isPro && <span className="bg-amber-400 text-white text-[8px] font-black px-1 rounded">PRO</span>}
                        </div>
-                       <div className="py-2 px-4 bg-slate-100 dark:bg-slate-800 rounded-xl font-black text-indigo-600 text-sm">
+                       <div className="py-2 px-4 bg-white border border-slate-200 rounded-xl font-black text-slate-900 text-sm shadow-sm">
                           {rankingTab === 'points' ? currentLeaderboard[2].points : formatTotalTime(currentLeaderboard[2].time)}
                        </div>
-                       <div className="w-20 h-16 bg-amber-900/10 dark:bg-amber-900/30 rounded-t-2xl mt-2" />
+                       <div className="w-20 h-16 bg-amber-100 rounded-t-2xl mt-2 border-t-4 border-amber-200" />
                     </div>
                  )}
               </div>
@@ -1351,7 +1351,7 @@ const App: React.FC = () => {
                  {currentLeaderboard.slice(3).map((user, index) => (
                     <div 
                       key={user.id} 
-                      className={`flex items-center gap-4 p-4 rounded-3xl border-2 transition-all ${user.isMe ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800' : 'bg-white border-slate-100 dark:bg-slate-900 dark:border-slate-800'}`}
+                      className={`flex items-center gap-4 p-4 rounded-3xl border-2 transition-all bg-white hover:bg-slate-50 shadow-sm hover:shadow-md ${user.isMe ? 'border-indigo-200 bg-indigo-50/30' : 'border-slate-100'}`}
                     >
                        <div className="w-8 font-black text-slate-400 text-center">#{index + 4}</div>
                        <div className={`w-12 h-12 rounded-xl ${user.bg} flex items-center justify-center p-1`}>
@@ -1359,7 +1359,7 @@ const App: React.FC = () => {
                        </div>
                        <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <p className={`font-bold ${user.isMe ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                            <p className={`font-bold ${user.isMe ? 'text-indigo-700' : 'text-slate-900'}`}>
                                {user.name} {user.isMe && '(Você)'}
                             </p>
                             {(user as any).isPro && (
@@ -1367,7 +1367,7 @@ const App: React.FC = () => {
                             )}
                           </div>
                        </div>
-                       <div className="font-black text-slate-600 dark:text-slate-400">
+                       <div className="font-black text-slate-900">
                           {rankingTab === 'points' ? user.points : formatTotalTime(user.time)}
                        </div>
                     </div>
