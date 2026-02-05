@@ -180,35 +180,37 @@ const Modal = ({ title, onClose, children, isDark }: any) => (
 
 const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogin: () => void, isDark: boolean }) => {
   return (
-    <div className={`min-h-screen flex flex-col ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'} transition-all`}>
+    <div className={`min-h-screen flex flex-col ${isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'} transition-all`}>
       {/* Nav */}
-      <nav className="p-6 md:p-10 flex justify-between items-center max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-top-4 duration-700">
+      <nav className={`p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-top-4 duration-700 sticky top-0 z-50 ${isDark ? 'bg-slate-950/80' : 'bg-white/90'} backdrop-blur-md border-b ${isDark ? 'border-slate-800' : 'border-slate-50'}`}>
          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
-               <Zap size={32} fill="currentColor" />
+            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
+               <Zap size={24} fill="currentColor" />
             </div>
-            <h1 className="text-4xl font-black tracking-tighter leading-none text-indigo-600 hidden md:block">GUITASK</h1>
+            <h1 className={`text-3xl font-black tracking-tighter leading-none hidden md:block ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              GUITASK<span className="text-indigo-600">.</span>
+            </h1>
          </div>
          <div className="flex gap-4">
-            <button onClick={onLogin} className="text-sm font-black uppercase text-slate-500 hover:text-indigo-600 transition-colors">Entrar</button>
+            <button onClick={onLogin} className="text-sm font-black uppercase text-slate-600 hover:text-indigo-600 transition-colors">Entrar</button>
             <button onClick={onStart} className="bg-indigo-600 text-white px-6 py-2.5 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 active:scale-95 transition-all">Criar Conta</button>
          </div>
       </nav>
 
       {/* Hero */}
-      <section className="flex-1 flex flex-col md:flex-row items-center justify-center py-12 md:py-20 px-6 max-w-7xl mx-auto gap-12 animate-in zoom-in-95 duration-1000">
+      <section className="flex-1 flex flex-col md:flex-row items-center justify-center py-16 md:py-24 px-6 max-w-7xl mx-auto gap-12 animate-in zoom-in-95 duration-1000">
          <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left space-y-8 z-10">
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] text-[#4c48e0]">
-               Clareza para mentes inquietas.
+            <h1 className={`text-5xl md:text-7xl font-black tracking-tighter leading-[0.95] ${isDark ? 'text-white' : 'text-slate-900'}`}>
+               Clareza para mentes <span className="text-indigo-600">inquietas.</span>
             </h1>
-            <p className="text-lg md:text-xl font-medium text-slate-500 max-w-2xl leading-relaxed">
-               Veja o que precisa ser feito com clareza, saiba quanto tempo está trabalhando, organize sua vida, seus projetos, veja o andamento em tempo real de forma clara.
+            <p className={`text-lg md:text-xl font-medium max-w-2xl leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+               Uma ferramenta de gestão de tarefas projetada especificamente para neurodivergentes. Quebre barreiras executivas, gamifique sua rotina e foque no que importa.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-start pt-4">
-               <button onClick={onStart} className="px-8 py-5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[2rem] font-black text-lg shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2">
+               <button onClick={onStart} className={`px-8 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-white text-slate-900' : 'bg-indigo-600 text-white'}`}>
                   Começar Agora <ChevronRight size={20} />
                </button>
-               <button onClick={onStart} className="px-8 py-5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] font-black text-lg text-slate-600 dark:text-slate-300 hover:border-indigo-600 hover:text-indigo-600 transition-all">
+               <button onClick={onStart} className={`px-8 py-5 border-2 rounded-[2rem] font-black text-lg transition-all ${isDark ? 'border-slate-800 text-slate-300 hover:border-white hover:text-white' : 'border-slate-200 text-slate-700 bg-white hover:border-indigo-600 hover:text-indigo-600'}`}>
                   Ver Demonstração
                </button>
             </div>
@@ -216,7 +218,7 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
          
          {/* Gabi Image */}
          <div className="flex-1 flex justify-center items-center relative">
-             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 blur-[80px] rounded-full" />
+             <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-[80px] rounded-full" />
              <img 
                src="https://i.ibb.co/HfvZ2k8q/1.png" 
                alt="Gabi" 
@@ -226,35 +228,107 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
       </section>
 
       {/* Features Grid */}
-      <section className="px-6 py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+      <section className={`px-6 py-24 border-y ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+            <div className={`p-8 rounded-[3rem] border transition-all group ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Target size={32} />
                </div>
-               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Visão Dupla</h3>
-               <p className="text-slate-500 font-medium">Separe o "O que fazer" (Macro) do "Como fazer" (Micro). Evite a paralisia da análise.</p>
+               <h3 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>Visão Dupla</h3>
+               <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Separe o "O que fazer" (Macro) do "Como fazer" (Micro). Evite a paralisia da análise.</p>
             </div>
-            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+            <div className={`p-8 rounded-[3rem] border transition-all group ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Trophy size={32} />
                </div>
-               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Gamificação</h3>
-               <p className="text-slate-500 font-medium">Ganhe XP por cada tarefa. Troque pontos por recompensas reais que você define.</p>
+               <h3 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>Gamificação</h3>
+               <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Ganhe XP por cada tarefa. Troque pontos por recompensas reais que você define.</p>
             </div>
-            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+            <div className={`p-8 rounded-[3rem] border transition-all group ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Crown size={32} />
                </div>
-               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Ranking Semanal</h3>
-               <p className="text-slate-500 font-medium">Competição saudável que motiva. Suba no pódio e mostre sua consistência.</p>
+               <h3 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>Ranking Semanal</h3>
+               <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Competição saudável que motiva. Suba no pódio e mostre sua consistência.</p>
             </div>
-            <div className="p-8 rounded-[3rem] bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 transition-all group">
+            <div className={`p-8 rounded-[3rem] border transition-all group ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Brain size={32} />
                </div>
-               <h3 className="text-2xl font-black mb-3 text-slate-900 dark:text-white">Foco Adaptativo</h3>
-               <p className="text-slate-500 font-medium">Pomodoro integrado com avatares de capivara que evoluem com você.</p>
+               <h3 className={`text-2xl font-black mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>Foco Adaptativo</h3>
+               <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Pomodoro integrado com avatares de capivara que evoluem com você.</p>
+            </div>
+         </div>
+      </section>
+
+      {/* MENTORS / CAPYBARAS SECTION */}
+      <section className={`px-6 py-24 ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
+         <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16 space-y-4">
+               <h2 className={`text-4xl md:text-5xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-900'}`}>Conheça seus Mentores</h2>
+               <p className={`text-lg font-medium max-w-2xl mx-auto ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Cada mente neurodivergente funciona em um ritmo diferente. Escolha o avatar que representa o seu momento atual.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+               {/* 1. King */}
+               <div className="p-8 rounded-[2.5rem] bg-amber-50 border border-amber-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
+                  <div className="w-32 h-32 mb-6">
+                     <CapybaraAvatar mood="king" />
+                  </div>
+                  <span className="text-xs font-black text-amber-600/60 uppercase tracking-[0.2em] mb-2">Gabi</span>
+                  <h3 className="text-2xl font-black text-amber-900 uppercase mb-2">O Líder</h3>
+                  <p className="text-amber-800/80 font-bold leading-tight">Para quando você precisa assumir o controle total, definir a estratégia e planejar o império.</p>
+               </div>
+
+               {/* 2. Coffee */}
+               <div className="p-8 rounded-[2.5rem] bg-emerald-50 border border-emerald-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
+                  <div className="w-32 h-32 mb-6">
+                     <CapybaraAvatar mood="coffee" />
+                  </div>
+                  <span className="text-xs font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-2">Ari</span>
+                  <h3 className="text-2xl font-black text-emerald-900 uppercase mb-2">O Hype</h3>
+                  <p className="text-emerald-800/80 font-bold leading-tight">Energia pura. Ideal para aqueles dias de hiperfoco onde a lista de tarefas desaparece em minutos.</p>
+               </div>
+
+               {/* 3. Cool */}
+               <div className="p-8 rounded-[2.5rem] bg-blue-50 border border-blue-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
+                  <div className="w-32 h-32 mb-6">
+                     <CapybaraAvatar mood="cool" />
+                  </div>
+                  <span className="text-xs font-black text-blue-600/60 uppercase tracking-[0.2em] mb-2">Babu</span>
+                  <h3 className="text-2xl font-black text-blue-900 uppercase mb-2">O Zen</h3>
+                  <p className="text-blue-800/80 font-bold leading-tight">Sem pânico. Te ajuda a respirar fundo e evitar o burnout quando a ansiedade tenta assumir.</p>
+               </div>
+
+               {/* 4. Smart */}
+               <div className="p-8 rounded-[2.5rem] bg-indigo-50 border border-indigo-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
+                  <div className="w-32 h-32 mb-6">
+                     <CapybaraAvatar mood="smart" />
+                  </div>
+                  <span className="text-xs font-black text-indigo-600/60 uppercase tracking-[0.2em] mb-2">Mino</span>
+                  <h3 className="text-2xl font-black text-indigo-900 uppercase mb-2">O Nerd</h3>
+                  <p className="text-indigo-800/80 font-bold leading-tight">Análise e profundidade. O companheiro perfeito para sessões de estudo intenso e tarefas complexas.</p>
+               </div>
+
+               {/* 5. Love */}
+               <div className="p-8 rounded-[2.5rem] bg-rose-50 border border-rose-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
+                  <div className="w-32 h-32 mb-6">
+                     <CapybaraAvatar mood="love" />
+                  </div>
+                  <span className="text-xs font-black text-rose-600/60 uppercase tracking-[0.2em] mb-2">Liu</span>
+                  <h3 className="text-2xl font-black text-rose-900 uppercase mb-2">O Amigo</h3>
+                  <p className="text-rose-800/80 font-bold leading-tight">Autocompaixão radical. Porque nem todo dia a gente está 100%, e tudo bem falhar às vezes.</p>
+               </div>
+
+               {/* 6. Hippie */}
+               <div className="p-8 rounded-[2.5rem] bg-lime-50 border border-lime-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
+                  <div className="w-32 h-32 mb-6">
+                     <CapybaraAvatar mood="hippie" />
+                  </div>
+                  <span className="text-xs font-black text-lime-600/60 uppercase tracking-[0.2em] mb-2">Iza</span>
+                  <h3 className="text-2xl font-black text-lime-900 uppercase mb-2">O Criativo</h3>
+                  <p className="text-lime-800/80 font-bold leading-tight">Deixe fluir. Perfeito para brainstorming, dias sem regras e momentos de pura inspiração.</p>
+               </div>
             </div>
          </div>
       </section>
@@ -295,7 +369,7 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
       </section>
 
       {/* Footer */}
-      <footer className="p-10 text-center text-slate-400 text-xs font-bold uppercase tracking-widest border-t border-slate-100 dark:border-slate-800">
+      <footer className={`p-10 text-center text-xs font-bold uppercase tracking-widest border-t ${isDark ? 'bg-slate-950 border-slate-800 text-slate-500' : 'bg-white border-slate-100 text-slate-400'}`}>
          <p>© {new Date().getFullYear()} Guitask. Clareza para mentes inquietas.</p>
       </footer>
     </div>
@@ -338,7 +412,7 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
   };
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
+    <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'}`}>
       <div className={`w-full max-w-[450px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 animate-in fade-in zoom-in-95 duration-300 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="p-10 pb-6 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl mb-6 group hover:rotate-12 transition-transform duration-300">
