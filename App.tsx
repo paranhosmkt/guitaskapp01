@@ -1265,7 +1265,7 @@ const App: React.FC = () => {
         {view === 'ranking' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-4xl mx-auto">
             <header className="mb-10 flex flex-col items-center text-center">
-              <h2 className="text-4xl font-black tracking-tight mb-2 text-slate-900 dark:text-white">Ranking Semanal</h2>
+              <h2 className="text-4xl font-black tracking-tight mb-2 text-[#4b47df]">Ranking Semanal</h2>
               <p className="text-sm font-bold text-slate-500 italic mb-6">Veja como você está se saindo em relação à comunidade!</p>
               
               <div className="flex p-1.5 rounded-2xl border border-slate-100 bg-white shadow-sm">
