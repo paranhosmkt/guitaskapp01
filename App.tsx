@@ -204,14 +204,11 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
                Clareza para mentes <span className="text-indigo-600">inquietas.</span>
             </h1>
             <p className={`text-lg md:text-xl font-medium max-w-2xl leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-               Uma ferramenta de gestão de tarefas projetada especificamente para neurodivergentes. Quebre barreiras executivas, gamifique sua rotina e foque no que importa.
+               Você encontrou a melhor ferramenta para te ajudar a ter mais clareza e foco. A união entre IA, Pomodoro e uma interface limpa é o que ajuda você a organizar a bagunça da mente. Comece a testar agora, de graça.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-start pt-4">
                <button onClick={onStart} className={`px-8 py-5 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-white text-slate-900' : 'bg-indigo-600 text-white'}`}>
-                  Começar Agora <ChevronRight size={20} />
-               </button>
-               <button onClick={onStart} className={`px-8 py-5 border-2 rounded-[2rem] font-black text-lg transition-all ${isDark ? 'border-slate-800 text-slate-300 hover:border-white hover:text-white' : 'border-slate-200 text-slate-700 bg-white hover:border-indigo-600 hover:text-indigo-600'}`}>
-                  Ver Demonstração
+                  Começar Agora Grátis <ChevronRight size={20} />
                </button>
             </div>
          </div>
@@ -1317,7 +1314,7 @@ const App: React.FC = () => {
                        </div>
                        <div className="flex items-center gap-1 mb-1">
                           <p className="text-sm font-black text-slate-900">{currentLeaderboard[0].name}</p>
-                          {(currentLeaderboard[0] as any).isPro && <span className="bg-amber-400 text-white text-[9px] font-black px-1 rounded">PRO</span>}
+                          {(currentLeaderboard[0] as any).isPro && <span className="bg-amber-400 text-white text-[8px] font-black px-1 rounded">PRO</span>}
                        </div>
                        <div className="py-2 px-6 bg-indigo-600 text-white rounded-xl font-black text-base shadow-lg mb-2">
                           {rankingTab === 'points' ? currentLeaderboard[0].points : formatTotalTime(currentLeaderboard[0].time)}
@@ -1836,62 +1833,32 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Comentários / Notas</label>
-                   <textarea value={newSubTask.notes} onChange={e => setNewSubTask({...newSubTask, notes: e.target.value})} placeholder="O que eu não posso esquecer?" rows={2} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Notas</label>
+                   <textarea value={newSubTask.notes} onChange={e => setNewSubTask({...newSubTask, notes: e.target.value})} placeholder="Detalhes ou observações" rows={2} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all resize-none ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                     <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo</label>
-                     <input 
-                        type="date" 
-                        value={newSubTask.dueDate} 
-                        onChange={e => setNewSubTask({ ...newSubTask, dueDate: e.target.value })} 
-                        className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} 
-                     />
-                  </div>
-                  <div className="space-y-1">
-                     <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Link relacionado</label>
-                     <input value={newSubTask.link} onChange={e => setNewSubTask({...newSubTask, link: e.target.value})} placeholder="URL aqui..." className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
-                  </div>
+                
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo (Opcional)</label>
+                   <input type="date" value={newSubTask.dueDate} onChange={e => setNewSubTask({...newSubTask, dueDate: e.target.value})} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
-                <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Adicionar ao Plano</button>
+
+                <div className="space-y-1">
+                   <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Link (Opcional)</label>
+                   <input type="url" value={newSubTask.link} onChange={e => setNewSubTask({...newSubTask, link: e.target.value})} placeholder="https://" className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                </div>
+
+                <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Salvar Atividade</button>
              </div>
            )}
         </Modal>
       )}
 
-      {activeModal === 'links' && activeTask && (
-        <Modal title="Links e Referências" onClose={() => setActiveModal(null)} isDark={isDark}>
-           <div className="space-y-6">
-              <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mb-4">Mantenha tudo o que você precisa a um clique de distância.</p>
-              <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                 {activeTask.links?.map(l => (
-                    <a key={l.id} href={l.url} target="_blank" rel="noreferrer" className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-indigo-600 transition-all group">
-                       <span className="font-bold text-sm text-slate-700 dark:text-slate-200 group-hover:text-indigo-600">{l.title}</span>
-                       <ExternalLink size={16} className="text-indigo-600" />
-                    </a>
-                 ))}
-                 {(!activeTask.links || activeTask.links.length === 0) && (
-                    <div className="text-center py-10 text-slate-400 italic font-medium">Nenhum link salvo ainda.</div>
-                 )}
-              </div>
-              <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
-                 <input placeholder="Título do link" className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} id="new-link-title" />
-                 <input placeholder="https://..." className={`w-full p-4 border-2 rounded-2xl font-bold text-xs outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} id="new-link-url" />
-                 <button onClick={() => {
-                    const titleElement = document.getElementById('new-link-title') as HTMLInputElement;
-                    const urlElement = document.getElementById('new-link-url') as HTMLInputElement;
-                    const title = titleElement.value;
-                    const url = urlElement.value;
-                    if (title && url) {
-                       setTasks(prev => prev.map(t => t.id === activeTaskId ? { ...t, links: [...(t.links || []), { id: Date.now().toString(), title, url }] } : t));
-                       titleElement.value = '';
-                       urlElement.value = '';
-                    }
-                 }} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase shadow-lg hover:bg-black transition-colors">Adicionar Link</button>
-              </div>
-           </div>
-        </Modal>
+      {activeModal === 'links' && (
+         <Modal title="Gerenciar Links" onClose={() => setActiveModal(null)} isDark={isDark}>
+             <div className="py-12 text-center text-slate-500 font-bold">
+                Funcionalidade em breve.
+             </div>
+         </Modal>
       )}
     </div>
   );
