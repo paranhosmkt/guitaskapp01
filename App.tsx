@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen, BellRing, Sparkles, Brain, Rocket
+  LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen, BellRing, Sparkles, Brain, Rocket, Map, ListChecks, Hourglass
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase, SUPABASE_IS_CONFIGURED } from './supabase';
@@ -258,6 +258,104 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
          </div>
       </section>
 
+      {/* HOW IT WORKS / METHODOLOGY */}
+      <section className={`px-6 py-24 ${isDark ? 'bg-slate-950' : 'bg-white'} relative overflow-hidden`}>
+         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1 space-y-12 relative z-10">
+               <div className="space-y-4">
+                  <span className="inline-block px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 font-black text-xs uppercase tracking-widest">Metodologia</span>
+                  <h2 className={`text-4xl md:text-6xl font-black tracking-tighter leading-[0.95] ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                     Transforme o caos mental em <span className="text-indigo-600">conquistas reais.</span>
+                  </h2>
+                  <p className={`text-lg font-medium leading-relaxed max-w-xl ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                     O Guitask não é apenas uma lista de tarefas. É um sistema desenhado para contornar as armadilhas do cérebro TDAH, como a paralisia de análise e a cegueira temporal.
+                  </p>
+               </div>
+
+               <div className="space-y-8">
+                  <div className="flex gap-6 group">
+                     <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg z-10 group-hover:scale-110 transition-transform">
+                           <Map size={24} />
+                        </div>
+                        <div className={`w-1 h-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'} my-2`}></div>
+                     </div>
+                     <div className="pb-8">
+                        <h3 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>1. Defina o Macro</h3>
+                        <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Tire a ideia da cabeça. Defina o objetivo final (o destino) sem se preocupar com os detalhes agora. Alivie a carga mental.</p>
+                     </div>
+                  </div>
+
+                  <div className="flex gap-6 group">
+                     <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg z-10 group-hover:scale-110 transition-transform">
+                           <ListChecks size={24} />
+                        </div>
+                        <div className={`w-1 h-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'} my-2`}></div>
+                     </div>
+                     <div className="pb-8">
+                        <h3 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>2. Quebre no Micro</h3>
+                        <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>O Guitask te força a focar em uma coisa de cada vez. Transforme montanhas assustadoras em passos ridicularmente fáceis.</p>
+                     </div>
+                  </div>
+
+                  <div className="flex gap-6 group">
+                     <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-2xl bg-amber-500 flex items-center justify-center text-white shadow-lg z-10 group-hover:scale-110 transition-transform">
+                           <Hourglass size={24} />
+                        </div>
+                        <div className={`w-1 h-full ${isDark ? 'bg-slate-800' : 'bg-slate-100'} my-2`}></div>
+                     </div>
+                     <div className="pb-8">
+                        <h3 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>3. Foco Cronometrado</h3>
+                        <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Use o Pomodoro integrado. Seu mentor capivara te acompanha, criando um "body doubling" virtual para manter você nos trilhos.</p>
+                     </div>
+                  </div>
+
+                  <div className="flex gap-6 group">
+                     <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-2xl bg-rose-500 flex items-center justify-center text-white shadow-lg z-10 group-hover:scale-110 transition-transform">
+                           <Gift size={24} />
+                        </div>
+                     </div>
+                     <div>
+                        <h3 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>4. Recompensa Imediata</h3>
+                        <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Seu cérebro precisa de dopamina agora, não depois. Ganhe XP, suba no ranking e troque pontos por prêmios que você mesmo define.</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div className={`flex-1 p-8 rounded-[3rem] border-2 relative ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-white shadow-xl'}`}>
+               <div className="absolute top-0 right-0 p-8 opacity-20">
+                  <Sparkles size={120} className="text-indigo-600" />
+               </div>
+               <h3 className="text-2xl font-black mb-8 uppercase tracking-widest text-indigo-600">Benefícios Comprovados</h3>
+               <div className="space-y-6">
+                  {[
+                     { title: "Fim da Paralisia", desc: "A visão micro elimina o medo de começar tarefas grandes." },
+                     { title: "Dopamina Saudável", desc: "Gamificação transforma tarefas chatas em fontes de satisfação." },
+                     { title: "Consistência", desc: "O sistema de Ranking e Streak te mantém voltando todo dia." },
+                     { title: "Menos Ansiedade", desc: "Saber exatamente o próximo passo acalma a mente hiperativa." }
+                  ].map((item, i) => (
+                     <div key={i} className={`flex items-start gap-4 p-4 rounded-2xl transition-all hover:scale-[1.02] ${isDark ? 'bg-slate-800 hover:bg-slate-700' : 'bg-white hover:bg-white/80 shadow-sm'}`}>
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                           <Check size={16} strokeWidth={3} />
+                        </div>
+                        <div>
+                           <h4 className={`font-black text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>{item.title}</h4>
+                           <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{item.desc}</p>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+               <button onClick={onStart} className="w-full mt-8 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-sm shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                  <Rocket size={18} /> Começar a Jornada
+               </button>
+            </div>
+         </div>
+      </section>
+
       {/* MENTORS / CAPYBARAS SECTION */}
       <section className={`px-6 py-24 ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
          <div className="max-w-7xl mx-auto">
@@ -277,22 +375,22 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
                   <p className="text-amber-800/80 font-bold leading-tight">Para quando você precisa assumir o controle total, definir a estratégia e planejar o império.</p>
                </div>
 
-               {/* 2. Coffee */}
+               {/* 2. Coffee (Agora é o Babu) */}
                <div className="p-8 rounded-[2.5rem] bg-emerald-50 border border-emerald-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
                   <div className="w-32 h-32 mb-6">
                      <CapybaraAvatar mood="coffee" />
                   </div>
-                  <span className="text-xs font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-2">Ari</span>
+                  <span className="text-xs font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-2">Babu</span>
                   <h3 className="text-2xl font-black text-emerald-900 uppercase mb-2">O Hype</h3>
                   <p className="text-emerald-800/80 font-bold leading-tight">Energia pura. Ideal para aqueles dias de hiperfoco onde a lista de tarefas desaparece em minutos.</p>
                </div>
 
-               {/* 3. Cool */}
+               {/* 3. Cool (Agora é a Ari) */}
                <div className="p-8 rounded-[2.5rem] bg-blue-50 border border-blue-100 flex flex-col items-center text-center transition-transform hover:scale-105 duration-300">
                   <div className="w-32 h-32 mb-6">
                      <CapybaraAvatar mood="cool" />
                   </div>
-                  <span className="text-xs font-black text-blue-600/60 uppercase tracking-[0.2em] mb-2">Babu</span>
+                  <span className="text-xs font-black text-blue-600/60 uppercase tracking-[0.2em] mb-2">Ari</span>
                   <h3 className="text-2xl font-black text-blue-900 uppercase mb-2">O Zen</h3>
                   <p className="text-blue-800/80 font-bold leading-tight">Sem pânico. Te ajuda a respirar fundo e evitar o burnout quando a ansiedade tenta assumir.</p>
                </div>
