@@ -898,6 +898,37 @@ const App: React.FC = () => {
      }, duration);
   };
 
+  const handleUpdateMentor = async (newMood: string) => {
+    // Optimistic update
+    const updatedSession = { ...session };
+    updatedSession.user.user_metadata.avatar_url = newMood;
+    setSession(updatedSession);
+    setActiveModal(null);
+
+    // Persist
+    if (session.isGuest) {
+        localStorage.setItem(STORAGE_KEYS.GUEST_SESSION, JSON.stringify(updatedSession));
+    } else {
+        const { error } = await supabase.auth.updateUser({
+            data: { avatar_url: newMood }
+        });
+        if (error) {
+            console.error("Error updating mentor:", error);
+            alert("Erro ao salvar mentor. Tente novamente.");
+        }
+    }
+    
+    const newConfig = CAPY_OPTIONS.find(c => c.id === newMood);
+    if(newConfig) {
+        setMentorNotification({
+            show: true,
+            message: `Olá! Sou eu, seu novo mentor ${newConfig.label}. Vamos nessa!`,
+            type: 'default'
+        });
+        setTimeout(() => setMentorNotification(prev => ({ ...prev, show: false })), 5000);
+    }
+  };
+
   // Check for delayed tasks when switching to local view
   useEffect(() => {
      if (view === 'local' && activeTaskId) {
@@ -1503,7 +1534,11 @@ const App: React.FC = () => {
           {/* BOTTOM: User Info + Points + Logout */}
           <div className="w-full space-y-4">
             {userAvatar && (
-               <div className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-slate-100 border-slate-200'} ${isSidebarCollapsed ? 'justify-center border-transparent bg-transparent' : ''}`}>
+               <button 
+                  onClick={() => setActiveModal('changeMentor')}
+                  className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-all text-left group hover:scale-[1.02] active:scale-95 ${isDark ? 'bg-slate-900 border-slate-700 hover:border-slate-600' : 'bg-slate-100 border-slate-200 hover:border-indigo-200'} ${isSidebarCollapsed ? 'justify-center border-transparent bg-transparent' : ''}`}
+                  title="Clique para trocar de Mentor"
+               >
                   <div className={`w-10 h-10 ${userAvatar.config.bg} rounded-xl flex items-center justify-center text-white shadow-sm overflow-hidden p-1 min-w-[2.5rem]`}>
                      <CapybaraAvatar mood={userAvatar.config.mood} />
                   </div>
@@ -1518,7 +1553,7 @@ const App: React.FC = () => {
                         </div>
                      </div>
                   )}
-               </div>
+               </button>
             )}
             
             {!isSidebarCollapsed ? (
@@ -2142,6 +2177,27 @@ const App: React.FC = () => {
               ))}
               <button onClick={() => setActiveModal(null)} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all">Salvar Configurações</button>
            </div>
+        </Modal>
+      )}
+
+      {activeModal === 'changeMentor' && (
+        <Modal title="Trocar Mentor" onClose={() => setActiveModal(null)} isDark={isDark}>
+            <div className="grid grid-cols-2 gap-4">
+                {CAPY_OPTIONS.map((av) => (
+                <button
+                    key={av.id}
+                    onClick={() => handleUpdateMentor(av.id)}
+                    className={`p-4 rounded-3xl border-2 transition-all flex flex-col items-center gap-3 hover:scale-105 ${userAvatar?.config?.id === av.id ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20' : 'border-transparent bg-slate-50 dark:bg-slate-800 hover:bg-slate-100'}`}
+                >
+                    <div className="w-16 h-16">
+                        <CapybaraAvatar mood={av.mood} />
+                    </div>
+                    <div className="text-center">
+                        <p className={`font-black uppercase text-xs ${isDark ? 'text-white' : 'text-slate-900'}`}>{av.label}</p>
+                    </div>
+                </button>
+                ))}
+            </div>
         </Modal>
       )}
 
