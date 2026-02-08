@@ -38,86 +38,120 @@ const URGENCY_POINTS: Record<Urgency, number> = {
 };
 
 // --- MENTOR MESSAGES SYSTEM ---
-const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[] }> = {
+const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[], create: string[] }> = {
   king: { // Líder (Gabi)
     success: ["Excelente execução. O império cresce.", "Mais uma conquista estratégica.", "Liderança é fazer acontecer. Parabéns."],
     break: ["Pausa estratégica necessária. Recarregar.", "Um bom rei sabe quando descansar.", "O trono aguarda seu retorno. Descanse agora."],
-    delayed: ["O plano atrasou. Reajuste a estratégia imediatamente.", "Atrasos acontecem, mas a persistência define o rei.", "Não ignore o prazo. Retome o controle."]
+    delayed: ["O plano atrasou. Reajuste a estratégia imediatamente.", "Atrasos acontecem, mas a persistência define o rei.", "Não ignore o prazo. Retome o controle."],
+    create: ["Um novo decreto real foi emitido.", "A estratégia foi expandida. Ao trabalho.", "Excelente adição ao plano de domínio."]
   },
   coffee: { // Hype (Babu)
     success: ["BOOOOA! DESTRUIU! 🔥", "ISSO AÍ! NINGUÉM TE SEGURA!", "TÁ VOANDO! PRÓXIMA!"],
     break: ["Hora do recreio! Vai pular, correr, beber água!", "PARA TUDO! Pausa pra recarregar a bateria!", "Respira fundo e volta com tudo depois!"],
-    delayed: ["Eita! Atrasou? Bora acelerar isso aí!", "Não deixa a peteca cair! Foco total agora!", "Vamos recuperar esse tempo! Velocidade máxima!"]
+    delayed: ["Eita! Atrasou? Bora acelerar isso aí!", "Não deixa a peteca cair! Foco total agora!", "Vamos recuperar esse tempo! Velocidade máxima!"],
+    create: ["MAIS UMA PRA CONTA! BORA!", "ISSO AÍ! ENCHE ESSA LISTA E DESTRÓI!", "TAREFA NOVA! SANGUE NO OLHO! 🔥"]
   },
   cool: { // Zen (Ari)
     success: ["Um passo de cada vez. A harmonia foi mantida.", "Fluindo como água. Muito bom.", "Sem esforço, apenas foco. Parabéns."],
     break: ["O silêncio é a resposta. Respire.", "Desconecte para reconectar.", "Olhe pela janela. O mundo pode esperar."],
-    delayed: ["Sem culpa. O tempo é relativo. Apenas recomece.", "Não se estresse com o atraso. Flua de volta para a tarefa.", "Respire fundo. Tudo vai ser feito no tempo certo."]
+    delayed: ["Sem culpa. O tempo é relativo. Apenas recomece.", "Não se estresse com o atraso. Flua de volta para a tarefa.", "Respire fundo. Tudo vai ser feito no tempo certo."],
+    create: ["Intenção definida. Deixe fluir.", "Uma nova semente foi plantada.", "O caminho se abre com este novo passo."]
   },
   smart: { // Nerd (Mino)
     success: ["Eficiência notável. Dopamina liberada.", "Tarefa processada com sucesso. Ótimo trabalho.", "Análise concluída: produtividade em alta."],
     break: ["Níveis de neurotransmissores baixos. Reabastecimento necessário.", "Sobrecarga cognitiva iminente. Iniciar protocolo de descanso.", "O cérebro precisa consolidar os dados. Durma ou descanse."],
-    delayed: ["Cronograma desviado. Recalculando rota de eficiência.", "A probabilidade de sucesso aumenta se você focar agora.", "Alerta de prazo. Vamos otimizar esse tempo."]
+    delayed: ["Cronograma desviado. Recalculando rota de eficiência.", "A probabilidade de sucesso aumenta se você focar agora.", "Alerta de prazo. Vamos otimizar esse tempo."],
+    create: ["Novo nó adicionado ao grafo de tarefas.", "Alocação de recursos iniciada.", "Input recebido. Protocolo de execução aguardando."]
   },
   love: { // Amigo (Liu)
     success: ["Que orgulho de você! ❤️", "Viu como você consegue? Você é incrível!", "Comemore cada vitória, meu anjo!"],
     break: ["Cuide de você um pouquinho. Descansa.", "Você merece uma pausa quentinha no coração.", "Seja gentil consigo mesmo. Pare um pouco."],
-    delayed: ["Tudo bem atrasar, não se culpe. Vamos tentar de novo?", "Está difícil? Eu estou aqui com você. Vamos juntos.", "Um dia de cada vez. Não desista por causa de um prazo."]
+    delayed: ["Tudo bem atrasar, não se culpe. Vamos tentar de novo?", "Está difícil? Eu estou aqui com você. Vamos juntos.", "Um dia de cada vez. Não desista por causa de um prazo."],
+    create: ["Oba! Um novo começo! ✨", "Vai dar tudo certo, eu acredito em você.", "Mais um passinho na direção do seu sonho!"]
   },
   hippie: { // Criativo (Iza)
     success: ["A energia fluiu perfeitamente. Gratidão.", "Você manifestou essa conquista! ✨", "Sinta a vibração de dever cumprido."],
     break: ["Vá ver o céu. Deixe a mente vagar.", "Conecte-se com o universo lá fora.", "Deixe as ideias decantarem no silêncio."],
-    delayed: ["O tempo é uma ilusão humana. Apenas flua.", "Se o fluxo travou, mude a perspectiva.", "Não force. Respire e volte com amor."]
+    delayed: ["O tempo é uma ilusão humana. Apenas flua.", "Se o fluxo travou, mude a perspectiva.", "Não force. Respire e volte com amor."],
+    create: ["Você manifestou uma nova realidade.", "Enviando boas vibrações para essa tarefa.", "O universo conspira a favor desta ação."]
   }
 };
 
-// --- TUTORIAL CONTENT ---
-const TUTORIAL_STEPS = [
-  {
-    view: 'global',
-    highlightId: null,
-    title: "Boas-vindas!",
-    text: "Olá! Eu serei seu mentor. Minha missão é ajudar sua mente incrível a conquistar o mundo, sem se perder no caos. Vamos fazer um tour rápido?"
-  },
-  {
-    view: 'global',
-    highlightId: 'btn-create-macro',
-    title: "1. O Começo (Macro)",
-    text: "Tudo começa aqui. Clique neste botão para definir um Objetivo Grande. Não se preocupe com os detalhes agora, foque apenas no destino final."
-  },
-  {
-    view: 'local',
-    highlightId: 'objective-header',
-    title: "2. Visão Local",
-    text: "Ao entrar em um objetivo, você vê o contexto e referências. Aqui é onde a ansiedade diminui, pois você sabe exatamente 'por que' está fazendo isso."
-  },
-  {
-    view: 'local',
-    highlightId: 'btn-add-subtask',
-    title: "3. Quebre em Micro-passos",
-    text: "A mágica contra a procrastinação: quebre o objetivo em tarefas ridicularmente pequenas aqui. O cérebro adora coisas fáceis!"
-  },
-  {
-    view: 'local',
-    highlightId: 'container-timer',
-    title: "4. Timer & Foco",
-    text: "Use o Pomodoro integrado. Eu estarei aqui te fazendo companhia enquanto o tempo roda. Foco total, uma coisa de cada vez."
-  },
-  {
-    view: 'ranking',
-    highlightId: 'container-ranking',
-    title: "5. Ranking Semanal",
-    text: "Ganhe XP por cada tarefa concluída e suba no ranking. Uma competição saudável para manter sua dopamina lá em cima!"
-  },
-  {
-    view: 'rewards',
-    highlightId: 'btn-create-reward',
-    title: "6. Recompensas",
-    text: "Defina prêmios reais para você mesmo (um café, um episódio de série). Troque seus pontos aqui. Seu esforço merece celebração real!"
-  }
+// --- TUTORIAL CONTENT BY PERSONALITY ---
+const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | null, title: string, text: string }[]> = {
+  king: [
+    { view: 'global', highlightId: null, title: "Saudações, Estrategista.", text: "Eu sou Gabi, seu conselheiro real. Minha função é garantir que seu império de produtividade seja construído sobre bases sólidas. Vamos inspecionar seus domínios?" },
+    { view: 'global', highlightId: 'btn-create-macro', title: "1. A Grande Visão (Macro)", text: "Todo grande reinado começa com um decreto. Use este botão para definir seus Objetivos Estratégicos. Foque no destino final, não nas batalhas menores." },
+    { view: 'local', highlightId: 'objective-header', title: "2. O Campo de Batalha", text: "Ao selecionar um objetivo, você entra na sala de guerra. Aqui você visualiza o contexto e suas referências. Clareza é poder." },
+    { view: 'local', highlightId: 'btn-add-subtask', title: "3. Dividir para Conquistar", text: "Um exército não vence sem pelotões. Quebre o objetivo grande em missões menores e executáveis aqui. Esmague a resistência da procrastinação." },
+    { view: 'local', highlightId: 'container-timer', title: "4. Cronometrar o Ataque", text: "O tempo é seu recurso mais valioso. Use o Pomodoro para executar ataques focados. Eu estarei aqui garantindo a disciplina." },
+    { view: 'ranking', highlightId: 'container-ranking', title: "5. Hall da Fama", text: "A glória é eterna. Ganhe XP por cada conquista e suba no ranking semanal. Mostre a todos quem manda." },
+    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Espólios de Guerra", text: "Um rei celebra suas vitórias. Defina recompensas reais para si mesmo e troque seus pontos aqui. Você merece o banquete." }
+  ],
+  coffee: [
+    { view: 'global', highlightId: null, title: "E AÍ!!! ⚡️", text: "Eu sou o Babu e eu tô LIGADO NO 220V! Bora fazer acontecer? Sem tempo a perder, a gente vai destruir essa lista de tarefas! VEM COMIGO!" },
+    { view: 'global', highlightId: 'btn-create-macro', title: "1. O ALVO GRANDE! 🎯", text: "Clica aqui e joga aquela meta gigante que tá na sua cabeça! Não pensa muito, só JOGA LÁ! A gente resolve os detalhes depois!" },
+    { view: 'local', highlightId: 'objective-header', title: "2. Visão Raio-X", text: "Entrou no objetivo? BOOM! Aqui tá tudo que você precisa saber. Contexto, links, tudo na mão pra não perder o ritmo!" },
+    { view: 'local', highlightId: 'btn-add-subtask', title: "3. TRITURAR TAREFAS", text: "A meta é grande? QUEBRA ELA! Transforma aquele monstro em pedacinhos fáceis de engolir! Vapo vapo!" },
+    { view: 'local', highlightId: 'container-timer', title: "4. HORA DO RUSH! ⏱️", text: "Liga esse timer e NÃO PARA! É foco total, adrenalina pura! Eu vou ficar pulando aqui do lado pra te animar!" },
+    { view: 'ranking', highlightId: 'container-ranking', title: "5. O PÓDIO É NOSSO 🏆", text: "Faz tarefa, ganha XP, sobe no ranking! Vamos passar todo mundo! EU QUERO ESSE PRIMEIRO LUGAR!" },
+    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. A MELHOR PARTE 🎁", text: "Trabalhou muito? TEM PRÊMIO! Cadastra aquele café, aquele doce, aquela série! Troca seus pontos e SE JOGA!" }
+  ],
+  cool: [
+    { view: 'global', highlightId: null, title: "Namastê. 🍃", text: "Oi, eu sou a Ari. Que bom que você está aqui. Vamos organizar sua mente sem pressão, no seu tempo. Respire fundo... e vamos fluir." },
+    { view: 'global', highlightId: 'btn-create-macro', title: "1. A Intenção (Macro)", text: "Aqui a gente planta a semente. Crie seu objetivo principal sem se preocupar com o 'como'. Apenas visualize onde quer chegar." },
+    { view: 'local', highlightId: 'objective-header', title: "2. Espaço de Clareza", text: "Dentro do objetivo, o ruído desaparece. Aqui você encontra o propósito e o contexto, para que a ansiedade não tenha vez." },
+    { view: 'local', highlightId: 'btn-add-subtask', title: "3. Pequenos Passos", text: "Não tente abraçar o mundo. Divida a montanha em pedrinhas aqui. Um passo de cada vez, com calma e presença." },
+    { view: 'local', highlightId: 'container-timer', title: "4. Fluxo Temporal", text: "O tempo não é inimigo. Use o timer para entrar em estado de fluxo. Eu te acompanho em silêncio enquanto você foca." },
+    { view: 'ranking', highlightId: 'container-ranking', title: "5. Jornada Compartilhada", text: "Veja seu progresso e o dos outros. Sem competição tóxica, apenas a celebração de estarmos todos caminhando." },
+    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Autocuidado", text: "Ser produtivo também é se cuidar. Defina mimos para você e use seus pontos para lembrar de ser gentil consigo mesmo." }
+  ],
+  smart: [
+    { view: 'global', highlightId: null, title: "Olá. Sistema Online.", text: "Sou Mino. Minha heurística indica que você busca otimização cognitiva. Vou guiá-lo pelos protocolos de eficiência da plataforma." },
+    { view: 'global', highlightId: 'btn-create-macro', title: "1. Definição de Escopo", text: "Inicie o processo instanciando um Objetivo Macro neste botão. A segregação do 'O Quê' do 'Como' reduz a carga cognitiva inicial." },
+    { view: 'local', highlightId: 'objective-header', title: "2. Contexto Local", text: "Ao acessar a instância do objetivo, você obtém os metadados necessários. Contexto claro reduz a latência na tomada de decisão." },
+    { view: 'local', highlightId: 'btn-add-subtask', title: "3. Granularidade", text: "Decomponha o problema complexo em unidades atômicas de trabalho. Subtarefas menores aumentam a taxa de conclusão e dopamina." },
+    { view: 'local', highlightId: 'container-timer', title: "4. Técnica Pomodoro", text: "Ative o cronômetro para blocos de foco intenso. A gestão temporal é crítica para evitar a fadiga sináptica. Estarei monitorando." },
+    { view: 'ranking', highlightId: 'container-ranking', title: "5. Métricas Comparativas", text: "A gamificação aumenta o engajamento. Analise seu desempenho relativo no ranking semanal baseando-se em XP acumulado." },
+    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Reforço Positivo", text: "O cérebro requer incentivos. Configure recompensas tangíveis e efetue a troca por pontos para fechar o ciclo de hábito." }
+  ],
+  love: [
+    { view: 'global', highlightId: null, title: "Oiê, meu anjo! ❤️", text: "Sou a Liu e tô tão feliz de te ver! Eu sei que às vezes é difícil, mas eu vou segurar sua mão. Vamos organizar tudo com muito carinho?" },
+    { view: 'global', highlightId: 'btn-create-macro', title: "1. Seu Sonho (Macro)", text: "Clica aqui e me conta: o que você quer conquistar? Não tenha medo de sonhar grande, a gente dá um jeito juntos!" },
+    { view: 'local', highlightId: 'objective-header', title: "2. Ninho Seguro", text: "Aqui dentro do objetivo é nosso cantinho. Você vê o porquê de estar fazendo isso. Sem pressa, sem culpa." },
+    { view: 'local', highlightId: 'btn-add-subtask', title: "3. Passinhos de Bebê", text: "Se parecer muito difícil, a gente divide! Cria tarefinhas bem pequenas aqui. Cada check é um abraço que você se dá!" },
+    { view: 'local', highlightId: 'container-timer', title: "4. Tempo de Carinho", text: "Vamos focar um pouquinho? Liga o timer. Se cansar, a gente para. O importante é tentar. Estou aqui com você." },
+    { view: 'ranking', highlightId: 'container-ranking', title: "5. Mural do Orgulho", text: "Olha o quanto você brilhou! Ganhe pontos e veja como você é capaz. Eu tenho tanto orgulho de você no ranking!" },
+    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Mimos pra Você", text: "Você merece tudo de bom! Escolha presentes que te façam sorrir e troque seus pontinhos. Cuide do seu coração." }
+  ],
+  hippie: [
+    { view: 'global', highlightId: null, title: "Salve, ser de luz! ✨", text: "Eu sou a Iza. Sinto que a energia aqui tá pronta pra mudar. Vamos alinhar seus chakras da produtividade e fazer a criatividade fluir?" },
+    { view: 'global', highlightId: 'btn-create-macro', title: "1. Manifestação (Macro)", text: "O universo precisa saber o que você quer. Clica aqui e joga sua intenção pro cosmos (e pra lista). O que vamos criar hoje?" },
+    { view: 'local', highlightId: 'objective-header', title: "2. O Vórtice", text: "Entrando no objetivo, você conecta com a essência. Aqui estão as referências e a vibe do projeto. Sinta a inspiração." },
+    { view: 'local', highlightId: 'btn-add-subtask', title: "3. Fluindo nos Detalhes", text: "Não deixe a energia estagnar. Quebre a visão em ações aqui. Deixe fluir, uma tarefa leva a outra organicamente." },
+    { view: 'local', highlightId: 'container-timer', title: "4. Ritmo Natural", text: "O tempo é uma ilusão, mas o timer ajuda a canalizar o foco. Use-o para mergulhar no agora. Esteja presente na tarefa." },
+    { view: 'ranking', highlightId: 'container-ranking', title: "5. Egrégora Coletiva", text: "Somos todos um. No ranking, você vê a energia de todo mundo se movendo. Suba e espalhe boas vibrações." },
+    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Troca Energética", text: "Tudo é troca. Você deu energia pro trabalho, agora receba de volta. Crie recompensas que nutram sua alma." }
+  ]
+};
+
+const CAPY_OPTIONS = [
+  { id: 'king', label: 'Líder', mood: 'king', bg: 'bg-amber-100' },
+  { id: 'coffee', label: 'Hype', mood: 'coffee', bg: 'bg-emerald-100' },
+  { id: 'cool', label: 'Zen', mood: 'cool', bg: 'bg-blue-100' },
+  { id: 'smart', label: 'Nerd', mood: 'smart', bg: 'bg-indigo-100' },
+  { id: 'love', label: 'Amigo', mood: 'love', bg: 'bg-rose-100' },
+  { id: 'hippie', label: 'Criativo', mood: 'hippie', bg: 'bg-lime-100' }
 ];
 
-// Capybara Avatar Component (Same as before)
+const MOCK_USERS = [
+    { id: 'u1', name: 'Alice', avatar: 'smart', bg: 'bg-indigo-100' },
+    { id: 'u2', name: 'Bob', avatar: 'coffee', bg: 'bg-emerald-100' },
+    { id: 'u3', name: 'Charlie', avatar: 'cool', bg: 'bg-blue-100' },
+    { id: 'u4', name: 'Diana', avatar: 'love', bg: 'bg-rose-100' },
+    { id: 'u5', name: 'Evan', avatar: 'king', bg: 'bg-amber-100' }
+];
+
 const CapybaraAvatar = ({ mood, className = "w-full h-full" }: { mood: string, className?: string }) => {
   const skin = "#D4A373"; // Capy brown
   const snout = "#A98467"; // Darker brown
@@ -150,62 +184,13 @@ const CapybaraAvatar = ({ mood, className = "w-full h-full" }: { mood: string, c
   );
 };
 
-const CAPY_OPTIONS = [
-  { id: 'king', label: 'Líder', bg: 'bg-amber-100', mood: 'king' },
-  { id: 'coffee', label: 'Focado', bg: 'bg-emerald-100', mood: 'coffee' },
-  { id: 'cool', label: 'Relax', bg: 'bg-blue-100', mood: 'cool' },
-  { id: 'smart', label: 'Intelectual', bg: 'bg-indigo-100', mood: 'smart' },
-  { id: 'love', label: 'Amável', bg: 'bg-rose-100', mood: 'love' },
-  { id: 'hippie', label: 'Hippie', bg: 'bg-lime-100', mood: 'hippie' },
-];
-
-// Mock Data for Leaderboard
-const MOCK_USERS = [
-  { id: 'u1', name: 'Ana P.', avatar: 'coffee', bg: 'bg-emerald-100', points: 0, time: 0 },
-  { id: 'u2', name: 'Carlos M.', avatar: 'cool', bg: 'bg-blue-100', points: 0, time: 0 },
-  { id: 'u3', name: 'Beatriz L.', avatar: 'smart', bg: 'bg-indigo-100', points: 0, time: 0 },
-  { id: 'u4', name: 'João S.', avatar: 'king', bg: 'bg-amber-100', points: 0, time: 0 },
-  { id: 'u5', name: 'Fernanda R.', avatar: 'love', bg: 'bg-rose-100', points: 0, time: 0 },
-  { id: 'u6', name: 'Lucas T.', avatar: 'cool', bg: 'bg-blue-100', points: 0, time: 0 },
-  { id: 'u7', name: 'Mariana C.', avatar: 'smart', bg: 'bg-indigo-100', points: 0, time: 0 },
-];
-
-const NavItem = ({ active, onClick, icon, label, isDark, collapsed }: any) => (
-  <button 
-    onClick={onClick} 
-    title={collapsed ? label : undefined}
-    className={`flex items-center ${collapsed ? 'justify-center px-2' : 'gap-4 px-5'} w-full py-4 rounded-2xl transition-all ${active ? (isDark ? 'text-indigo-300 bg-indigo-950/40 shadow-inner' : 'text-indigo-600 bg-indigo-50 shadow-sm') : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
-  >
-    <div className="min-w-[20px] flex justify-center">{icon}</div> 
-    {!collapsed && <span className="text-sm uppercase font-black tracking-tight whitespace-nowrap overflow-hidden transition-all duration-300 opacity-100">{label}</span>}
-  </button>
-);
-
-// --- MENTOR NOTIFICATION COMPONENT ---
-const MentorNotification = ({ show, message, avatarConfig, onClose }: any) => {
-  if (!show || !avatarConfig) return null;
-
-  return (
-    <div className="fixed bottom-24 right-4 md:bottom-10 md:right-10 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-500 flex flex-col items-end pointer-events-none">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-t-3xl rounded-bl-3xl rounded-br-sm shadow-2xl border-2 border-indigo-100 dark:border-slate-700 max-w-[280px] md:max-w-sm mb-4 relative pointer-events-auto">
-         <button onClick={onClose} className="absolute -top-2 -left-2 bg-slate-200 dark:bg-slate-700 p-1 rounded-full text-slate-500 hover:text-rose-500 hover:scale-110 transition-all"><X size={14} /></button>
-         <p className="text-sm font-black text-slate-700 dark:text-slate-200 leading-relaxed">
-            "{message}"
-         </p>
-         <div className="absolute -bottom-2 right-0 w-4 h-4 bg-white dark:bg-slate-800 rotate-45 border-r-2 border-b-2 border-indigo-100 dark:border-slate-700"></div>
-      </div>
-      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-3xl ${avatarConfig.bg} border-4 border-white dark:border-slate-900 shadow-xl flex items-center justify-center p-2 relative pointer-events-auto hover:scale-110 transition-transform cursor-pointer`} onClick={onClose}>
-         <CapybaraAvatar mood={avatarConfig.mood} />
-      </div>
-    </div>
-  );
-};
-
 // --- TUTORIAL OVERLAY COMPONENT ---
-const TutorialOverlay = ({ step, avatarConfig, onNext, onSkip }: any) => {
-  if (step === -1 || !avatarConfig) return null;
-  const currentStep = TUTORIAL_STEPS[step];
+const TutorialOverlay = ({ step, steps, avatarConfig, onNext, onSkip }: any) => {
+  if (step === -1 || !avatarConfig || !steps) return null;
+  const currentStep = steps[step];
   
+  if (!currentStep) return null;
+
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
 
@@ -309,7 +294,7 @@ const TutorialOverlay = ({ step, avatarConfig, onNext, onSkip }: any) => {
                    Pular
                 </button>
                 <button onClick={onNext} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-black uppercase text-xs shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center justify-center gap-2">
-                   {step === TUTORIAL_STEPS.length - 1 ? 'Começar!' : 'Próximo'} <ChevronRight size={16} />
+                   {step === steps.length - 1 ? 'Começar!' : 'Próximo'} <ChevronRight size={16} />
                 </button>
              </div>
           </div>
@@ -685,6 +670,46 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
   );
 };
 
+const MentorNotification = ({ show, message, avatarConfig, onClose }: any) => {
+  if (!show || !avatarConfig) return null;
+  return (
+    <div className="fixed top-6 right-6 z-[200] w-full max-w-sm animate-in slide-in-from-right duration-500 pointer-events-none">
+        <div className={`relative p-4 rounded-3xl shadow-2xl border-2 flex items-start gap-4 ${avatarConfig.bg} border-white/50 backdrop-blur-md pointer-events-auto`}>
+            <button onClick={onClose} className="absolute top-2 right-2 text-slate-500 hover:text-slate-800 transition-colors"><X size={14} /></button>
+            <div className="w-12 h-12 rounded-2xl bg-white/40 flex items-center justify-center shrink-0 p-1">
+                <CapybaraAvatar mood={avatarConfig.mood} />
+            </div>
+            <div className="flex-1 pr-4">
+                <p className="text-[10px] font-black uppercase text-slate-500/80 mb-1">Mentor Diz:</p>
+                <p className="text-sm font-bold text-slate-800 leading-snug">{message}</p>
+            </div>
+        </div>
+    </div>
+  );
+};
+
+const NavItem = ({ collapsed, active, onClick, icon, label, isDark }: any) => {
+  return (
+    <button
+      onClick={onClick}
+      title={collapsed ? label : ''}
+      className={`w-full flex items-center gap-4 p-3 rounded-2xl transition-all duration-200 group relative overflow-hidden
+        ${active 
+          ? 'bg-indigo-600 text-white shadow-lg' 
+          : (isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-600')}
+        ${collapsed ? 'justify-center aspect-square' : ''}
+      `}
+    >
+      <div className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-110'}`}>
+        {icon}
+      </div>
+      {!collapsed && (
+        <span className="font-bold text-sm">{label}</span>
+      )}
+    </button>
+  );
+};
+
 const App: React.FC = () => {
   const [session, setSession] = useState<any>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.GUEST_SESSION);
@@ -769,6 +794,12 @@ const App: React.FC = () => {
      return { config: avatarConfig, name: full_name?.split(' ')[0] || 'Usuário' };
   }, [session]);
 
+  // Derived Tutorial Steps based on mood
+  const currentTutorialSteps = useMemo(() => {
+     const mood = userAvatar?.config?.mood || 'king';
+     return TUTORIAL_CONTENT[mood] || TUTORIAL_CONTENT['king'];
+  }, [userAvatar]);
+
   // Tutorial Logic
   useEffect(() => {
      if (session && !localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED)) {
@@ -777,8 +808,8 @@ const App: React.FC = () => {
   }, [session]);
 
   useEffect(() => {
-     if (tutorialStep >= 0 && tutorialStep < TUTORIAL_STEPS.length) {
-        const stepConfig = TUTORIAL_STEPS[tutorialStep];
+     if (tutorialStep >= 0 && tutorialStep < currentTutorialSteps.length) {
+        const stepConfig = currentTutorialSteps[tutorialStep];
         // Switch view based on step
         if (stepConfig.view !== view) {
            // Special handling for local view if no tasks exist
@@ -805,10 +836,10 @@ const App: React.FC = () => {
            setView(stepConfig.view as any);
         }
      }
-  }, [tutorialStep, tasks, activeTaskId]); // Intentionally not adding 'view' to avoid loop if view change triggers something
+  }, [tutorialStep, tasks, activeTaskId, currentTutorialSteps]); 
 
   const handleTutorialNext = () => {
-     if (tutorialStep < TUTORIAL_STEPS.length - 1) {
+     if (tutorialStep < currentTutorialSteps.length - 1) {
         setTutorialStep(prev => prev + 1);
      } else {
         // Finish
@@ -836,7 +867,7 @@ const App: React.FC = () => {
   };
 
   // TRIGGER MENTOR MESSAGE
-  const triggerMentor = (scenario: 'success' | 'break' | 'delayed') => {
+  const triggerMentor = (scenario: 'success' | 'break' | 'delayed' | 'create') => {
      if (!userAvatar) return;
      const moodId = userAvatar.config.mood;
      const messages = MENTOR_MESSAGES[moodId] || MENTOR_MESSAGES['king'];
@@ -1077,6 +1108,8 @@ const App: React.FC = () => {
     setPomodoroMode('focus');
     setPomodoroTime(timerSettings.focus * 60);
     setPomodoroCycles(0);
+    
+    triggerMentor('create');
   };
 
   const handleCreateReward = () => {
@@ -1113,6 +1146,8 @@ const App: React.FC = () => {
     setTasks(tasks.map(t => t.id === activeTaskId ? { ...t, subTasks: [...t.subTasks, sub] } : t));
     setNewSubTask({ title: '', notes: '', link: '', dueDate: '', urgency: 'medium' });
     setActiveModal(null);
+    
+    triggerMentor('create');
   };
 
   const updateSubTaskStatus = (subId: string, newStatus: TaskStatus) => {
@@ -1399,6 +1434,7 @@ const App: React.FC = () => {
       {/* Tutorial Overlay */}
       <TutorialOverlay 
          step={tutorialStep}
+         steps={currentTutorialSteps}
          avatarConfig={userAvatar?.config}
          onNext={handleTutorialNext}
          onSkip={handleTutorialSkip}
