@@ -759,6 +759,10 @@ const App: React.FC = () => {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [rankingTab, setRankingTab] = useState<'points' | 'time'>('points');
   
+  // Editing State
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingSubTask, setEditingSubTask] = useState<SubTask | null>(null);
+  
   // Mentor State
   const [mentorNotification, setMentorNotification] = useState<{ show: boolean, message: string, type: 'default' | 'celebration' }>({ show: false, message: '', type: 'default' });
 
@@ -1163,37 +1167,58 @@ const App: React.FC = () => {
     setTutorialStep(0);
   };
 
-  const handleCreateMacro = () => {
-    if (!isPro && tasks.length >= 1) return; // Prevent creation via function if limit reached
+  const openEditTask = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    setEditingTask(task);
+    setNewTaskTitle(task.title);
+    setNewTaskContext(task.description);
+    setNewTaskDeadline(task.dueDate);
+    setActiveModal('macro');
+  };
 
+  const handleCreateMacro = () => {
     if (!newTaskTitle.trim()) return;
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle,
-      description: newTaskContext,
-      priority: 'medium',
-      status: 'todo',
-      dueDate: newTaskDeadline,
-      estimatedTime: 30,
-      category: 'Estratégia',
-      completed: false,
-      subTasks: [],
-      rewardPoints: 100,
-      totalTimeSpent: 0,
-      links: []
-    };
-    setTasks([...tasks, newTask]);
+
+    if (editingTask) {
+       // Update existing task
+       setTasks(tasks.map(t => t.id === editingTask.id ? {
+          ...t,
+          title: newTaskTitle,
+          description: newTaskContext,
+          dueDate: newTaskDeadline
+       } : t));
+       setEditingTask(null);
+    } else {
+       // Create new task
+       if (!isPro && tasks.length >= 1) return; // Prevent creation via function if limit reached
+       const newTask: Task = {
+         id: Date.now().toString(),
+         title: newTaskTitle,
+         description: newTaskContext,
+         priority: 'medium',
+         status: 'todo',
+         dueDate: newTaskDeadline,
+         estimatedTime: 30,
+         category: 'Estratégia',
+         completed: false,
+         subTasks: [],
+         rewardPoints: 100,
+         totalTimeSpent: 0,
+         links: []
+       };
+       setTasks([...tasks, newTask]);
+       setActiveTaskId(newTask.id);
+       setView('local');
+       setPomodoroMode('focus');
+       setPomodoroTime(timerSettings.focus * 60);
+       setPomodoroCycles(0);
+       triggerMentor('create');
+    }
+
     setNewTaskTitle(""); 
     setNewTaskContext("");
     setNewTaskDeadline(getLocalISOString());
     setActiveModal(null);
-    setActiveTaskId(newTask.id);
-    setView('local');
-    setPomodoroMode('focus');
-    setPomodoroTime(timerSettings.focus * 60);
-    setPomodoroCycles(0);
-    
-    triggerMentor('create');
   };
 
   const handleCreateReward = () => {
@@ -1210,28 +1235,60 @@ const App: React.FC = () => {
     setActiveModal(null);
   };
 
+  const openEditSubTask = (e: React.MouseEvent, sub: SubTask) => {
+    e.stopPropagation();
+    setEditingSubTask(sub);
+    setNewSubTask({
+       title: sub.title,
+       notes: sub.notes || '',
+       link: sub.link || '',
+       dueDate: sub.dueDate || '',
+       urgency: sub.urgency || 'medium'
+    });
+    setActiveModal('subtask');
+  };
+
   const handleAddSubTask = () => {
     if (!activeTaskId) return;
-    const currentTask = tasks.find(t => t.id === activeTaskId);
-    if (!isPro && currentTask && currentTask.subTasks.length >= 1) return; // Prevent creation via function
-
     if (!newSubTask.title.trim()) return;
-    const sub: SubTask = {
-      id: Date.now().toString(),
-      title: newSubTask.title,
-      notes: newSubTask.notes,
-      link: newSubTask.link,
-      dueDate: newSubTask.dueDate,
-      urgency: newSubTask.urgency,
-      completed: false,
-      status: 'todo',
-      rewardPoints: URGENCY_POINTS[newSubTask.urgency || 'medium']
-    };
-    setTasks(tasks.map(t => t.id === activeTaskId ? { ...t, subTasks: [...t.subTasks, sub] } : t));
+
+    if (editingSubTask) {
+       setTasks(prev => prev.map(t => {
+          if (t.id === activeTaskId) {
+             return { ...t, subTasks: t.subTasks.map(s => s.id === editingSubTask.id ? {
+                 ...s,
+                 title: newSubTask.title,
+                 notes: newSubTask.notes,
+                 link: newSubTask.link,
+                 dueDate: newSubTask.dueDate,
+                 urgency: newSubTask.urgency,
+                 rewardPoints: URGENCY_POINTS[newSubTask.urgency || 'medium']
+             } : s)};
+          }
+          return t;
+       }));
+       setEditingSubTask(null);
+    } else {
+       const currentTask = tasks.find(t => t.id === activeTaskId);
+       if (!isPro && currentTask && currentTask.subTasks.length >= 1) return; // Prevent creation via function
+
+       const sub: SubTask = {
+         id: Date.now().toString(),
+         title: newSubTask.title,
+         notes: newSubTask.notes,
+         link: newSubTask.link,
+         dueDate: newSubTask.dueDate,
+         urgency: newSubTask.urgency,
+         completed: false,
+         status: 'todo',
+         rewardPoints: URGENCY_POINTS[newSubTask.urgency || 'medium']
+       };
+       setTasks(tasks.map(t => t.id === activeTaskId ? { ...t, subTasks: [...t.subTasks, sub] } : t));
+       triggerMentor('create');
+    }
+    
     setNewSubTask({ title: '', notes: '', link: '', dueDate: '', urgency: 'medium' });
     setActiveModal(null);
-    
-    triggerMentor('create');
   };
 
   const updateSubTaskStatus = (subId: string, newStatus: TaskStatus) => {
@@ -1623,7 +1680,7 @@ const App: React.FC = () => {
         <div className="flex md:hidden items-center justify-around w-full h-full px-4 relative">
            <button onClick={() => setView('global')} className={`p-2 rounded-xl ${view === 'global' ? 'text-indigo-600' : 'text-slate-500'}`}><LayoutDashboard size={24} /></button>
            <button onClick={() => setView('local')} className={`p-2 rounded-xl ${view === 'local' ? 'text-indigo-600' : 'text-slate-500'}`}><Target size={24} /></button>
-           <button onClick={() => setActiveModal('macro')} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
+           <button onClick={() => { setEditingTask(null); setNewTaskTitle(""); setNewTaskContext(""); setActiveModal('macro'); }} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg -translate-y-4 border-4 border-white dark:border-slate-900"><Plus size={28} /></button>
            <div className="relative group">
               <button onClick={() => setView('ranking')} className={`p-2 rounded-xl ${view === 'ranking' ? 'text-indigo-600' : 'text-slate-500'}`}><Crown size={24} /></button>
               <div className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-white text-[8px] font-black rounded-full border border-white">
@@ -1643,7 +1700,7 @@ const App: React.FC = () => {
                 <h2 className="text-4xl font-black tracking-tight">Estratégia Global</h2>
                 <p className="text-sm font-bold text-slate-500 italic">Visualize o destino, não apenas os passos.</p>
               </div>
-              <button id="btn-create-macro" onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
+              <button id="btn-create-macro" onClick={() => { setEditingTask(null); setNewTaskTitle(""); setNewTaskContext(""); setActiveModal('macro'); }} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
                 <Plus size={20} /> Novo objetivo/projeto
               </button>
             </header>
@@ -1655,6 +1712,9 @@ const App: React.FC = () => {
                   <div key={task.id} onClick={() => { setActiveTaskId(task.id); setView('local'); }} className={`p-8 rounded-[3.5rem] border-2 transition-all cursor-pointer shadow-sm group relative flex flex-col justify-between h-80 hover:translate-y-[-4px] ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100 hover:border-indigo-100'}`}>
                     <div>
                       <div className="absolute top-6 right-6 flex gap-2">
+                         <button onClick={(e) => openEditTask(e, task)} className="p-2 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition-all" title="Editar">
+                            <Pencil size={16} />
+                         </button>
                          <button onClick={(e) => duplicateTask(e, task)} className="p-2 rounded-full hover:bg-indigo-50 dark:hover:bg-indigo-900/50 text-slate-400 hover:text-indigo-600 transition-all" title="Duplicar">
                             <Copy size={16} />
                          </button>
@@ -1960,7 +2020,7 @@ const App: React.FC = () => {
              <div className="space-y-6">
                 <div className="flex items-center justify-between px-4">
                    <h3 className="text-2xl font-black tracking-tight">Atividades</h3>
-                   <button id="btn-add-subtask" onClick={() => setActiveModal('subtask')} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 transition-all">
+                   <button id="btn-add-subtask" onClick={() => { setEditingSubTask(null); setNewSubTask({ title: '', notes: '', link: '', dueDate: '', urgency: 'medium' }); setActiveModal('subtask'); }} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 transition-all">
                       <PlusCircle size={18} /> Adicionar atividade
                    </button>
                 </div>
@@ -2011,6 +2071,9 @@ const App: React.FC = () => {
                                         </div>
                                      </div>
                                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={(e) => openEditSubTask(e, sub)} className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Editar">
+                                           <Pencil size={12} />
+                                        </button>
                                         <button onClick={(e) => duplicateSubTask(e, sub)} className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Duplicar">
                                            <Copy size={12} />
                                         </button>
@@ -2236,8 +2299,8 @@ const App: React.FC = () => {
       )}
 
       {activeModal === 'macro' && (
-        <Modal title="Defina seu objetivo" onClose={() => setActiveModal(null)} isDark={isDark}>
-           {!isPro && tasks.length >= 1 ? (
+        <Modal title={editingTask ? "Editar objetivo" : "Defina seu objetivo"} onClose={() => { setActiveModal(null); setEditingTask(null); }} isDark={isDark}>
+           {!isPro && tasks.length >= 1 && !editingTask ? (
              <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-4">
                    <Lock size={40} />
@@ -2278,15 +2341,17 @@ const App: React.FC = () => {
                    {/* Changed to datetime-local for precise timing */}
                    <input type="datetime-local" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
-                <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Criar</button>
+                <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">
+                  {editingTask ? "Salvar Alterações" : "Criar"}
+                </button>
              </div>
            )}
         </Modal>
       )}
 
       {activeModal === 'subtask' && (
-        <Modal title="Adicionar atividade" onClose={() => setActiveModal(null)} isDark={isDark}>
-           {(!isPro && activeTask && activeTask.subTasks.length >= 1) ? (
+        <Modal title={editingSubTask ? "Editar atividade" : "Adicionar atividade"} onClose={() => { setActiveModal(null); setEditingSubTask(null); }} isDark={isDark}>
+           {(!isPro && activeTask && activeTask.subTasks.length >= 1 && !editingSubTask) ? (
              <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-4">
                    <Lock size={40} />
@@ -2354,7 +2419,9 @@ const App: React.FC = () => {
                    <input type="url" value={newSubTask.link} onChange={e => setNewSubTask({...newSubTask, link: e.target.value})} placeholder="https://" className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
 
-                <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Salvar Atividade</button>
+                <button onClick={handleAddSubTask} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">
+                  {editingSubTask ? "Salvar Alterações" : "Salvar Atividade"}
+                </button>
              </div>
            )}
         </Modal>
