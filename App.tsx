@@ -17,7 +17,8 @@ const STORAGE_KEYS = {
   GUEST_SESSION: 'guiflow_guest_session',
   TIMER_SETTINGS: 'guiflow_timer_settings',
   VIEW_PREFERENCE: 'guiflow_view_pref',
-  SIDEBAR_COLLAPSED: 'guiflow_sidebar_collapsed'
+  SIDEBAR_COLLAPSED: 'guiflow_sidebar_collapsed',
+  TUTORIAL_COMPLETED: 'guiflow_tutorial_completed_v2' // Bumped version to force new tutorial
 };
 
 const STRIPE_LINK = 'https://buy.stripe.com/8x214o14E0FB8TF5NNcEw00';
@@ -36,7 +37,87 @@ const URGENCY_POINTS: Record<Urgency, number> = {
   critical: 100
 };
 
-// Capybara Avatar Component
+// --- MENTOR MESSAGES SYSTEM ---
+const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[] }> = {
+  king: { // Líder (Gabi)
+    success: ["Excelente execução. O império cresce.", "Mais uma conquista estratégica.", "Liderança é fazer acontecer. Parabéns."],
+    break: ["Pausa estratégica necessária. Recarregar.", "Um bom rei sabe quando descansar.", "O trono aguarda seu retorno. Descanse agora."],
+    delayed: ["O plano atrasou. Reajuste a estratégia imediatamente.", "Atrasos acontecem, mas a persistência define o rei.", "Não ignore o prazo. Retome o controle."]
+  },
+  coffee: { // Hype (Babu)
+    success: ["BOOOOA! DESTRUIU! 🔥", "ISSO AÍ! NINGUÉM TE SEGURA!", "TÁ VOANDO! PRÓXIMA!"],
+    break: ["Hora do recreio! Vai pular, correr, beber água!", "PARA TUDO! Pausa pra recarregar a bateria!", "Respira fundo e volta com tudo depois!"],
+    delayed: ["Eita! Atrasou? Bora acelerar isso aí!", "Não deixa a peteca cair! Foco total agora!", "Vamos recuperar esse tempo! Velocidade máxima!"]
+  },
+  cool: { // Zen (Ari)
+    success: ["Um passo de cada vez. A harmonia foi mantida.", "Fluindo como água. Muito bom.", "Sem esforço, apenas foco. Parabéns."],
+    break: ["O silêncio é a resposta. Respire.", "Desconecte para reconectar.", "Olhe pela janela. O mundo pode esperar."],
+    delayed: ["Sem culpa. O tempo é relativo. Apenas recomece.", "Não se estresse com o atraso. Flua de volta para a tarefa.", "Respire fundo. Tudo vai ser feito no tempo certo."]
+  },
+  smart: { // Nerd (Mino)
+    success: ["Eficiência notável. Dopamina liberada.", "Tarefa processada com sucesso. Ótimo trabalho.", "Análise concluída: produtividade em alta."],
+    break: ["Níveis de neurotransmissores baixos. Reabastecimento necessário.", "Sobrecarga cognitiva iminente. Iniciar protocolo de descanso.", "O cérebro precisa consolidar os dados. Durma ou descanse."],
+    delayed: ["Cronograma desviado. Recalculando rota de eficiência.", "A probabilidade de sucesso aumenta se você focar agora.", "Alerta de prazo. Vamos otimizar esse tempo."]
+  },
+  love: { // Amigo (Liu)
+    success: ["Que orgulho de você! ❤️", "Viu como você consegue? Você é incrível!", "Comemore cada vitória, meu anjo!"],
+    break: ["Cuide de você um pouquinho. Descansa.", "Você merece uma pausa quentinha no coração.", "Seja gentil consigo mesmo. Pare um pouco."],
+    delayed: ["Tudo bem atrasar, não se culpe. Vamos tentar de novo?", "Está difícil? Eu estou aqui com você. Vamos juntos.", "Um dia de cada vez. Não desista por causa de um prazo."]
+  },
+  hippie: { // Criativo (Iza)
+    success: ["A energia fluiu perfeitamente. Gratidão.", "Você manifestou essa conquista! ✨", "Sinta a vibração de dever cumprido."],
+    break: ["Vá ver o céu. Deixe a mente vagar.", "Conecte-se com o universo lá fora.", "Deixe as ideias decantarem no silêncio."],
+    delayed: ["O tempo é uma ilusão humana. Apenas flua.", "Se o fluxo travou, mude a perspectiva.", "Não force. Respire e volte com amor."]
+  }
+};
+
+// --- TUTORIAL CONTENT ---
+const TUTORIAL_STEPS = [
+  {
+    view: 'global',
+    highlightId: null,
+    title: "Boas-vindas!",
+    text: "Olá! Eu serei seu mentor. Minha missão é ajudar sua mente incrível a conquistar o mundo, sem se perder no caos. Vamos fazer um tour rápido?"
+  },
+  {
+    view: 'global',
+    highlightId: 'btn-create-macro',
+    title: "1. O Começo (Macro)",
+    text: "Tudo começa aqui. Clique neste botão para definir um Objetivo Grande. Não se preocupe com os detalhes agora, foque apenas no destino final."
+  },
+  {
+    view: 'local',
+    highlightId: 'objective-header',
+    title: "2. Visão Local",
+    text: "Ao entrar em um objetivo, você vê o contexto e referências. Aqui é onde a ansiedade diminui, pois você sabe exatamente 'por que' está fazendo isso."
+  },
+  {
+    view: 'local',
+    highlightId: 'btn-add-subtask',
+    title: "3. Quebre em Micro-passos",
+    text: "A mágica contra a procrastinação: quebre o objetivo em tarefas ridicularmente pequenas aqui. O cérebro adora coisas fáceis!"
+  },
+  {
+    view: 'local',
+    highlightId: 'container-timer',
+    title: "4. Timer & Foco",
+    text: "Use o Pomodoro integrado. Eu estarei aqui te fazendo companhia enquanto o tempo roda. Foco total, uma coisa de cada vez."
+  },
+  {
+    view: 'ranking',
+    highlightId: 'container-ranking',
+    title: "5. Ranking Semanal",
+    text: "Ganhe XP por cada tarefa concluída e suba no ranking. Uma competição saudável para manter sua dopamina lá em cima!"
+  },
+  {
+    view: 'rewards',
+    highlightId: 'btn-create-reward',
+    title: "6. Recompensas",
+    text: "Defina prêmios reais para você mesmo (um café, um episódio de série). Troque seus pontos aqui. Seu esforço merece celebração real!"
+  }
+];
+
+// Capybara Avatar Component (Same as before)
 const CapybaraAvatar = ({ mood, className = "w-full h-full" }: { mood: string, className?: string }) => {
   const skin = "#D4A373"; // Capy brown
   const snout = "#A98467"; // Darker brown
@@ -44,95 +125,27 @@ const CapybaraAvatar = ({ mood, className = "w-full h-full" }: { mood: string, c
 
   return (
     <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Background Circle (Optional, can be removed if handled by parent container) */}
-      
-      {/* Ears */}
       <circle cx="25" cy="35" r="8" fill={skin} stroke={stroke} strokeWidth="2"/>
       <circle cx="75" cy="35" r="8" fill={skin} stroke={stroke} strokeWidth="2"/>
-      
-      {/* Head */}
       <rect x="20" y="30" width="60" height="55" rx="20" fill={skin} stroke={stroke} strokeWidth="2"/>
-      
-      {/* Snout Area */}
       <rect x="35" y="58" width="30" height="20" rx="8" fill={snout} fillOpacity="0.6" />
-      
-      {/* Nostrils */}
       <path d="M44 65Q45 63 46 65" stroke={stroke} strokeWidth="2" strokeLinecap="round"/>
       <path d="M54 65Q55 63 56 65" stroke={stroke} strokeWidth="2" strokeLinecap="round"/>
-      
-      {/* Mouth */}
       <path d="M48 70Q50 73 52 70" stroke={stroke} strokeWidth="2" strokeLinecap="round"/>
-
-      {/* Eyes Base */}
       {mood !== 'cool' && (
         <>
           <circle cx="35" cy="48" r="4" fill="#333" />
           <circle cx="65" cy="48" r="4" fill="#333" />
-          {/* Shine */}
           <circle cx="37" cy="46" r="1.5" fill="white" />
           <circle cx="67" cy="46" r="1.5" fill="white" />
         </>
       )}
-
-      {/* MOODS / ACCESSORIES */}
-      
-      {mood === 'king' && (
-         // Crown
-         <path d="M30 28L25 5L40 20L50 2L60 20L75 5L70 28H30Z" fill="#FFC107" stroke="#FF6F00" strokeWidth="2" strokeLinejoin="round"/>
-      )}
-      
-      {mood === 'coffee' && (
-         // Coffee Cup
-         <g transform="translate(60, 65) scale(0.8)">
-            <path d="M0 0H20V15C20 20.5228 15.5228 25 10 25C4.47715 25 0 20.5228 0 15V0Z" fill="#3E2723" stroke="white" strokeWidth="2"/>
-            <path d="M20 5H25C27.7614 5 30 7.23858 30 10C30 12.7614 27.7614 15 25 15H20" stroke="white" strokeWidth="2" fill="none"/>
-            {/* Steam */}
-            <path d="M5 -10Q10 -15 5 -20" stroke="#DDD" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
-            <path d="M15 -8Q20 -13 15 -18" stroke="#DDD" strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
-         </g>
-      )}
-      
-      {mood === 'cool' && (
-         // Sunglasses
-         <g>
-           <rect x="25" y="42" width="22" height="12" rx="3" fill="#111" />
-           <rect x="53" y="42" width="22" height="12" rx="3" fill="#111" />
-           <line x1="47" y1="48" x2="53" y2="48" stroke="#111" strokeWidth="2" />
-           {/* Reflection */}
-           <line x1="28" y1="44" x2="35" y2="52" stroke="white" strokeWidth="1" opacity="0.3"/>
-           <line x1="56" y1="44" x2="63" y2="52" stroke="white" strokeWidth="1" opacity="0.3"/>
-         </g>
-      )}
-
-      {mood === 'love' && (
-         // Hearts eyes replaced or holding heart
-         <g transform="translate(75, 55) rotate(10)">
-            <path d="M10 5C10 0 5 0 2.5 2.5C0 0 -5 0 -5 5C-5 10 2.5 14 2.5 14C2.5 14 10 10 10 5Z" fill="#E91E63" stroke="#880E4F" strokeWidth="1"/>
-         </g>
-      )}
-
-      {mood === 'smart' && (
-          // Glasses
-          <g>
-            <circle cx="35" cy="48" r="11" stroke="#333" strokeWidth="2" fill="white" fillOpacity="0.2"/>
-            <circle cx="65" cy="48" r="11" stroke="#333" strokeWidth="2" fill="white" fillOpacity="0.2"/>
-            <path d="M46 48H54" stroke="#333" strokeWidth="2"/>
-          </g>
-      )}
-
-      {mood === 'hippie' && (
-          // Hippie Style: Headband + Round Glasses
-          <g>
-            {/* Headband */}
-            <path d="M20 32H80V38H20V32Z" fill="#F06292" stroke="#D81B60" strokeWidth="1"/>
-            <circle cx="50" cy="35" r="2" fill="#FFEB3B" />
-            
-            {/* Round Glasses */}
-            <circle cx="35" cy="48" r="9" stroke="#FFD54F" strokeWidth="2" fill="#E91E63" fillOpacity="0.2"/>
-            <circle cx="65" cy="48" r="9" stroke="#FFD54F" strokeWidth="2" fill="#E91E63" fillOpacity="0.2"/>
-            <path d="M44 48H56" stroke="#FFD54F" strokeWidth="2"/>
-          </g>
-      )}
+      {mood === 'king' && <path d="M30 28L25 5L40 20L50 2L60 20L75 5L70 28H30Z" fill="#FFC107" stroke="#FF6F00" strokeWidth="2" strokeLinejoin="round"/>}
+      {mood === 'coffee' && <g transform="translate(60, 65) scale(0.8)"><path d="M0 0H20V15C20 20.5228 15.5228 25 10 25C4.47715 25 0 20.5228 0 15V0Z" fill="#3E2723" stroke="white" strokeWidth="2"/><path d="M20 5H25C27.7614 5 30 7.23858 30 10C30 12.7614 27.7614 15 25 15H20" stroke="white" strokeWidth="2" fill="none"/><path d="M5 -10Q10 -15 5 -20" stroke="#DDD" strokeWidth="2" strokeLinecap="round" opacity="0.6"/><path d="M15 -8Q20 -13 15 -18" stroke="#DDD" strokeWidth="2" strokeLinecap="round" opacity="0.6"/></g>}
+      {mood === 'cool' && <g><rect x="25" y="42" width="22" height="12" rx="3" fill="#111" /><rect x="53" y="42" width="22" height="12" rx="3" fill="#111" /><line x1="47" y1="48" x2="53" y2="48" stroke="#111" strokeWidth="2" /><line x1="28" y1="44" x2="35" y2="52" stroke="white" strokeWidth="1" opacity="0.3"/><line x1="56" y1="44" x2="63" y2="52" stroke="white" strokeWidth="1" opacity="0.3"/></g>}
+      {mood === 'love' && <g transform="translate(75, 55) rotate(10)"><path d="M10 5C10 0 5 0 2.5 2.5C0 0 -5 0 -5 5C-5 10 2.5 14 2.5 14C2.5 14 10 10 10 5Z" fill="#E91E63" stroke="#880E4F" strokeWidth="1"/></g>}
+      {mood === 'smart' && <g><circle cx="35" cy="48" r="11" stroke="#333" strokeWidth="2" fill="white" fillOpacity="0.2"/><circle cx="65" cy="48" r="11" stroke="#333" strokeWidth="2" fill="white" fillOpacity="0.2"/><path d="M46 48H54" stroke="#333" strokeWidth="2"/></g>}
+      {mood === 'hippie' && <g><path d="M20 32H80V38H20V32Z" fill="#F06292" stroke="#D81B60" strokeWidth="1"/><circle cx="50" cy="35" r="2" fill="#FFEB3B" /><circle cx="35" cy="48" r="9" stroke="#FFD54F" strokeWidth="2" fill="#E91E63" fillOpacity="0.2"/><circle cx="65" cy="48" r="9" stroke="#FFD54F" strokeWidth="2" fill="#E91E63" fillOpacity="0.2"/><path d="M44 48H56" stroke="#FFD54F" strokeWidth="2"/></g>}
     </svg>
   );
 };
@@ -167,6 +180,143 @@ const NavItem = ({ active, onClick, icon, label, isDark, collapsed }: any) => (
     {!collapsed && <span className="text-sm uppercase font-black tracking-tight whitespace-nowrap overflow-hidden transition-all duration-300 opacity-100">{label}</span>}
   </button>
 );
+
+// --- MENTOR NOTIFICATION COMPONENT ---
+const MentorNotification = ({ show, message, avatarConfig, onClose }: any) => {
+  if (!show || !avatarConfig) return null;
+
+  return (
+    <div className="fixed bottom-24 right-4 md:bottom-10 md:right-10 z-[100] animate-in slide-in-from-bottom-10 fade-in duration-500 flex flex-col items-end pointer-events-none">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-t-3xl rounded-bl-3xl rounded-br-sm shadow-2xl border-2 border-indigo-100 dark:border-slate-700 max-w-[280px] md:max-w-sm mb-4 relative pointer-events-auto">
+         <button onClick={onClose} className="absolute -top-2 -left-2 bg-slate-200 dark:bg-slate-700 p-1 rounded-full text-slate-500 hover:text-rose-500 hover:scale-110 transition-all"><X size={14} /></button>
+         <p className="text-sm font-black text-slate-700 dark:text-slate-200 leading-relaxed">
+            "{message}"
+         </p>
+         <div className="absolute -bottom-2 right-0 w-4 h-4 bg-white dark:bg-slate-800 rotate-45 border-r-2 border-b-2 border-indigo-100 dark:border-slate-700"></div>
+      </div>
+      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-3xl ${avatarConfig.bg} border-4 border-white dark:border-slate-900 shadow-xl flex items-center justify-center p-2 relative pointer-events-auto hover:scale-110 transition-transform cursor-pointer`} onClick={onClose}>
+         <CapybaraAvatar mood={avatarConfig.mood} />
+      </div>
+    </div>
+  );
+};
+
+// --- TUTORIAL OVERLAY COMPONENT ---
+const TutorialOverlay = ({ step, avatarConfig, onNext, onSkip }: any) => {
+  if (step === -1 || !avatarConfig) return null;
+  const currentStep = TUTORIAL_STEPS[step];
+  
+  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [windowHeight, setWindowHeight] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+
+  useEffect(() => {
+    const handleResize = () => setWindowHeight(window.innerHeight);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!currentStep.highlightId) {
+      setTargetRect(null);
+      return;
+    }
+    const updateRect = () => {
+      const el = document.getElementById(currentStep.highlightId as string);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        setTimeout(() => {
+           const rect = el.getBoundingClientRect();
+           setTargetRect(rect);
+        }, 400);
+      } else {
+        setTargetRect(null);
+      }
+    };
+    
+    const timer = setTimeout(updateRect, 100);
+    window.addEventListener('resize', updateRect);
+    return () => {
+      window.removeEventListener('resize', updateRect);
+      clearTimeout(timer);
+    }
+  }, [step, currentStep]);
+
+  // Determine if bubble should be at Top or Bottom to avoid covering the element
+  // If target is in the bottom 40% of the screen, show bubble at TOP. Otherwise show at BOTTOM.
+  const showBubbleAtTop = targetRect ? (targetRect.top > windowHeight * 0.6) : false;
+  
+  const spotlightStyle: React.CSSProperties = targetRect ? {
+     position: 'fixed',
+     top: targetRect.top - 10,
+     left: targetRect.left - 10,
+     width: targetRect.width + 20,
+     height: targetRect.height + 20,
+     boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.85)',
+     borderRadius: '1.5rem',
+     zIndex: 200,
+     transition: 'all 0.5s ease-in-out',
+     pointerEvents: 'none',
+     border: '2px solid rgba(255, 255, 255, 0.2)'
+  } : {};
+
+  return (
+    <>
+       {/* SPOTLIGHT or BACKDROP */}
+       {targetRect ? (
+          <div style={spotlightStyle} className="animate-in fade-in duration-500" />
+       ) : (
+          <div className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-500" />
+       )}
+
+       {/* CONTENT LAYER */}
+       {/* Uses fixed positioning relative to viewport edges to ensure it's always visible on mobile */}
+       <div 
+          className="fixed z-[201] flex flex-col items-center pointer-events-auto transition-all duration-500 ease-in-out"
+          style={targetRect ? {
+             left: '50%',
+             transform: 'translateX(-50%)',
+             width: 'calc(100% - 32px)',
+             maxWidth: '400px',
+             top: showBubbleAtTop ? '40px' : 'auto',
+             bottom: showBubbleAtTop ? 'auto' : '40px'
+          } : {
+             top: '50%',
+             left: '50%',
+             transform: 'translate(-50%, -50%)',
+             width: 'calc(100% - 32px)',
+             maxWidth: '400px',
+          }}
+       >
+          <div className={`w-28 h-28 rounded-[2rem] ${avatarConfig.bg} border-4 border-white dark:border-slate-800 shadow-2xl flex items-center justify-center p-3 mb-4 animate-bounce z-10`}>
+             <CapybaraAvatar mood={avatarConfig.mood} />
+          </div>
+          
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-2xl border-4 border-indigo-100 dark:border-slate-800 w-full text-center relative animate-in zoom-in-95 duration-300">
+             {/* Arrow direction based on position */}
+             {targetRect && (
+                <div 
+                  className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-white dark:bg-slate-900 rotate-45 border-l-4 border-t-4 border-indigo-100 dark:border-slate-800 ${showBubbleAtTop ? '-bottom-3.5 border-l-0 border-t-0 border-r-4 border-b-4' : '-top-3.5'}`}
+                />
+             )}
+             
+             <h3 className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mb-3">{currentStep.title}</h3>
+             <p className="text-base font-bold text-slate-600 dark:text-slate-300 leading-relaxed mb-8">
+                {currentStep.text}
+             </p>
+             
+             <div className="flex gap-3">
+                <button onClick={onSkip} className="flex-1 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-500 font-black uppercase text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                   Pular
+                </button>
+                <button onClick={onNext} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-black uppercase text-xs shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center justify-center gap-2">
+                   {step === TUTORIAL_STEPS.length - 1 ? 'Começar!' : 'Próximo'} <ChevronRight size={16} />
+                </button>
+             </div>
+          </div>
+       </div>
+    </>
+  );
+};
 
 const Modal = ({ title, onClose, children, isDark }: any) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300 overflow-y-auto">
@@ -428,41 +578,6 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
          </div>
       </section>
 
-      {/* PRO CTA */}
-      <section className="px-6 py-24 bg-indigo-600 relative overflow-hidden">
-         <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <Zap className="absolute top-10 left-10 w-64 h-64 text-white rotate-12" />
-            <Star className="absolute bottom-10 right-10 w-48 h-48 text-white -rotate-12" />
-         </div>
-         <div className="max-w-4xl mx-auto text-center relative z-10 text-white space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 border border-white/30 backdrop-blur-md font-bold text-xs uppercase tracking-widest">
-               <Crown size={14} /> Guitask PRO
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight">Desbloqueie seu Potencial Máximo</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-left max-w-3xl mx-auto">
-               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                  <CheckCircle className="text-amber-300" /> <span className="font-bold">Objetivos Ilimitados</span>
-               </div>
-               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                  <CheckCircle className="text-amber-300" /> <span className="font-bold">Subtarefas Infinitas</span>
-               </div>
-               <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                  <CheckCircle className="text-amber-300" /> <span className="font-bold">Tag PRO no Ranking</span>
-               </div>
-            </div>
-            
-            <div className="flex flex-col items-center gap-1 pt-4">
-                <p className="text-indigo-200 font-bold uppercase text-xs tracking-widest">A partir de</p>
-                <p className="text-5xl font-black text-white tracking-tighter mb-6">
-                   R$ 29,90<span className="text-xl font-bold text-indigo-200">/mês</span>
-                </p>
-                <button onClick={onStart} className="px-10 py-5 bg-white text-indigo-600 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
-                   Testar Agora
-                </button>
-            </div>
-         </div>
-      </section>
-
       {/* Footer */}
       <footer className={`p-10 text-center text-xs font-bold uppercase tracking-widest border-t ${isDark ? 'bg-slate-950 border-slate-800 text-slate-500' : 'bg-white border-slate-100 text-slate-400'}`}>
          <p>© {new Date().getFullYear()} Guitask. Clareza para mentes inquietas.</p>
@@ -601,6 +716,12 @@ const App: React.FC = () => {
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [rankingTab, setRankingTab] = useState<'points' | 'time'>('points');
   
+  // Mentor State
+  const [mentorNotification, setMentorNotification] = useState<{ show: boolean, message: string }>({ show: false, message: '' });
+
+  // Tutorial State
+  const [tutorialStep, setTutorialStep] = useState<number>(-1);
+
   // Pomodoro Settings & State
   const [timerSettings, setTimerSettings] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.TIMER_SETTINGS);
@@ -639,6 +760,117 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.VIEW_PREFERENCE, isCompactMode ? 'compact' : 'expanded');
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(isSidebarCollapsed));
   }, [tasks, completedTasks, rewards, redeemedHistory, stats, timerSettings, isCompactMode, isSidebarCollapsed]);
+
+  // Helper to get user avatar info
+  const userAvatar = useMemo(() => {
+     if (!session?.user?.user_metadata) return null;
+     const { avatar_url, full_name } = session.user.user_metadata;
+     const avatarConfig = CAPY_OPTIONS.find(a => a.id === avatar_url) || CAPY_OPTIONS[0];
+     return { config: avatarConfig, name: full_name?.split(' ')[0] || 'Usuário' };
+  }, [session]);
+
+  // Tutorial Logic
+  useEffect(() => {
+     if (session && !localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED)) {
+        setTutorialStep(0);
+     }
+  }, [session]);
+
+  useEffect(() => {
+     if (tutorialStep >= 0 && tutorialStep < TUTORIAL_STEPS.length) {
+        const stepConfig = TUTORIAL_STEPS[tutorialStep];
+        // Switch view based on step
+        if (stepConfig.view !== view) {
+           // Special handling for local view if no tasks exist
+           if (stepConfig.view === 'local' && tasks.length === 0) {
+              const demoTask: Task = {
+                 id: 'tutorial-task',
+                 title: 'Objetivo de Exemplo',
+                 description: 'Este é um objetivo criado temporariamente para você ver como funciona a visão de foco.',
+                 priority: 'medium',
+                 status: 'todo',
+                 dueDate: new Date().toISOString().split('T')[0],
+                 estimatedTime: 60,
+                 category: 'Tutorial',
+                 completed: false,
+                 subTasks: [],
+                 rewardPoints: 100,
+                 totalTimeSpent: 0
+              };
+              setTasks([demoTask]);
+              setActiveTaskId(demoTask.id);
+           } else if (stepConfig.view === 'local' && tasks.length > 0 && !activeTaskId) {
+              setActiveTaskId(tasks[0].id);
+           }
+           setView(stepConfig.view as any);
+        }
+     }
+  }, [tutorialStep, tasks, activeTaskId]); // Intentionally not adding 'view' to avoid loop if view change triggers something
+
+  const handleTutorialNext = () => {
+     if (tutorialStep < TUTORIAL_STEPS.length - 1) {
+        setTutorialStep(prev => prev + 1);
+     } else {
+        // Finish
+        setTutorialStep(-1);
+        localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, 'true');
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        // Clean up tutorial task if it exists
+        if (tasks.find(t => t.id === 'tutorial-task')) {
+           setTasks(prev => prev.filter(t => t.id !== 'tutorial-task'));
+           setActiveTaskId(null);
+           setView('global');
+        }
+     }
+  };
+
+  const handleTutorialSkip = () => {
+     setTutorialStep(-1);
+     localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETED, 'true');
+     // Clean up
+     if (tasks.find(t => t.id === 'tutorial-task')) {
+        setTasks(prev => prev.filter(t => t.id !== 'tutorial-task'));
+        setActiveTaskId(null);
+        setView('global');
+     }
+  };
+
+  // TRIGGER MENTOR MESSAGE
+  const triggerMentor = (scenario: 'success' | 'break' | 'delayed') => {
+     if (!userAvatar) return;
+     const moodId = userAvatar.config.mood;
+     const messages = MENTOR_MESSAGES[moodId] || MENTOR_MESSAGES['king'];
+     const scenarioMessages = messages[scenario];
+     const randomMsg = scenarioMessages[Math.floor(Math.random() * scenarioMessages.length)];
+     
+     setMentorNotification({ show: true, message: randomMsg });
+     
+     // Auto hide after 6 seconds
+     setTimeout(() => {
+        setMentorNotification(prev => ({ ...prev, show: false }));
+     }, 6000);
+  };
+
+  // Check for delayed tasks when switching to local view
+  useEffect(() => {
+     if (view === 'local' && activeTaskId) {
+        const currentTask = tasks.find(t => t.id === activeTaskId);
+        if (currentTask) {
+           const hasOverdue = currentTask.subTasks.some(st => {
+              if (st.status === 'done' || !st.dueDate) return false;
+              const due = new Date(st.dueDate);
+              const today = new Date();
+              today.setHours(0,0,0,0);
+              return due < today;
+           });
+           
+           if (hasOverdue) {
+              // Slight delay to not overwhelm on render
+              setTimeout(() => triggerMentor('delayed'), 1000);
+           }
+        }
+     }
+  }, [view, activeTaskId, tasks]);
 
   // Helper to play alarm sound
   const playAlarm = () => {
@@ -726,6 +958,9 @@ const App: React.FC = () => {
                  nextModeType = isLongBreak ? 'long' : 'short';
                  nextModeStr = isLongBreak ? 'Descanso Longo' : 'Pausa Curta';
                  notifyUser("Foco Concluído!", `Hora de uma ${nextModeStr}.`);
+                 
+                 // Trigger Mentor for Break
+                 triggerMentor('break');
               } else {
                  nextModeType = 'focus';
                  nextModeStr = 'Foco';
@@ -807,6 +1042,10 @@ const App: React.FC = () => {
     };
     setSession(guestSession);
     localStorage.setItem(STORAGE_KEYS.GUEST_SESSION, JSON.stringify(guestSession));
+    
+    // Always show tutorial in demo mode by resetting the completion flag
+    localStorage.removeItem(STORAGE_KEYS.TUTORIAL_COMPLETED);
+    setTutorialStep(0);
   };
 
   const handleCreateMacro = () => {
@@ -887,6 +1126,9 @@ const App: React.FC = () => {
              if (!wasCompleted && isNowCompleted) {
                 setStats(p => ({ ...p, points: p.points + s.rewardPoints }));
                 confetti({ particleCount: 30, spread: 40, origin: { y: 0.8 } });
+                
+                // Trigger Mentor for Success
+                triggerMentor('success');
              }
              return { ...s, status: newStatus, completed: isNowCompleted };
           }
@@ -1064,14 +1306,7 @@ const App: React.FC = () => {
     }
   };
   
-  // Helper to get user avatar info
-  const userAvatar = useMemo(() => {
-     if (!session?.user?.user_metadata) return null;
-     const { avatar_url, full_name } = session.user.user_metadata;
-     const avatarConfig = CAPY_OPTIONS.find(a => a.id === avatar_url) || CAPY_OPTIONS[0];
-     return { config: avatarConfig, name: full_name?.split(' ')[0] || 'Usuário' };
-  }, [session]);
-
+  // ... (Leaderboard Logic) ...
   // Ranking Calculation
   const leaderboardData = useMemo(() => {
     const now = new Date();
@@ -1152,8 +1387,26 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen pb-24 md:pb-0 ${isSidebarCollapsed ? 'md:pl-24' : 'md:pl-64'} flex flex-col transition-all duration-300 ease-in-out ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      
+      {/* Mentor Notification Component */}
+      <MentorNotification 
+         show={mentorNotification.show} 
+         message={mentorNotification.message} 
+         avatarConfig={userAvatar?.config} 
+         onClose={() => setMentorNotification({ ...mentorNotification, show: false })}
+      />
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay 
+         step={tutorialStep}
+         avatarConfig={userAvatar?.config}
+         onNext={handleTutorialNext}
+         onSkip={handleTutorialSkip}
+      />
+
       {/* Nav */}
       <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl transition-all duration-300 ease-in-out md:w-${isSidebarCollapsed ? '24' : '64'}`}>
+        {/* ... Nav Content ... */}
         {/* Sidebar Toggle (Desktop Only) */}
         <button 
            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -1250,6 +1503,7 @@ const App: React.FC = () => {
         </div>
       </nav>
 
+      {/* Main Content (truncated as previous logic) */}
       <main className="flex-1 p-4 md:p-10 w-full max-w-[1400px] mx-auto pt-10">
         {view === 'global' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -1258,7 +1512,7 @@ const App: React.FC = () => {
                 <h2 className="text-4xl font-black tracking-tight">Estratégia Global</h2>
                 <p className="text-sm font-bold text-slate-500 italic">Visualize o destino, não apenas os passos.</p>
               </div>
-              <button onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
+              <button id="btn-create-macro" onClick={() => setActiveModal('macro')} className="hidden md:flex bg-indigo-600 text-white px-6 py-3 rounded-2xl font-black shadow-lg hover:scale-105 transition-all items-center gap-2">
                 <Plus size={20} /> Novo objetivo/projeto
               </button>
             </header>
@@ -1313,6 +1567,7 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {/* ... Rest of existing views (history, ranking, local, rewards) ... */}
         {view === 'history' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             <header className="mb-10">
@@ -1358,7 +1613,7 @@ const App: React.FC = () => {
         )}
 
         {view === 'ranking' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-4xl mx-auto">
+          <div id="container-ranking" className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-4xl mx-auto">
             <header className="mb-10 flex flex-col items-center text-center">
               <h2 className="text-4xl font-black tracking-tight mb-2 text-[#4b47df]">Ranking Semanal</h2>
               <p className="text-sm font-bold text-slate-500 italic mb-6">Veja como você está se saindo em relação à comunidade!</p>
@@ -1497,7 +1752,7 @@ const App: React.FC = () => {
              
              <div className={`grid grid-cols-1 ${isCompactMode ? 'lg:grid-cols-3' : ''} gap-6`}>
                {/* Objective Header Window */}
-               <div className={`${isCompactMode ? 'lg:col-span-2' : ''} p-10 rounded-[3.5rem] shadow-xl border relative overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+               <div id="objective-header" className={`${isCompactMode ? 'lg:col-span-2' : ''} p-10 rounded-[3.5rem] shadow-xl border relative overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                   <div className="relative z-10 flex flex-col gap-6">
                      <div className="flex items-center">
                         <div className="px-3 py-1 bg-indigo-600 text-white rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
@@ -1533,7 +1788,7 @@ const App: React.FC = () => {
                </div>
 
                {/* Pomodoro Timer Window */}
-               <div className={`${isCompactMode ? 'lg:col-span-1' : ''} p-10 rounded-[3.5rem] shadow-xl border overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+               <div id="container-timer" className={`${isCompactMode ? 'lg:col-span-1' : ''} p-10 rounded-[3.5rem] shadow-xl border overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                   <div className="flex flex-col items-center gap-8">
                      <div className="w-full flex justify-center items-center px-4 relative">
                         <div className={`flex ${isCompactMode ? 'gap-2' : 'gap-4'}`}>
@@ -1574,7 +1829,7 @@ const App: React.FC = () => {
              <div className="space-y-6">
                 <div className="flex items-center justify-between px-4">
                    <h3 className="text-2xl font-black tracking-tight">Atividades</h3>
-                   <button onClick={() => setActiveModal('subtask')} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 transition-all">
+                   <button id="btn-add-subtask" onClick={() => setActiveModal('subtask')} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-black text-xs uppercase shadow-lg hover:scale-105 transition-all">
                       <PlusCircle size={18} /> Adicionar atividade
                    </button>
                 </div>
@@ -1669,12 +1924,12 @@ const App: React.FC = () => {
         )}
 
         {view === 'rewards' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
+          <div id="container-rewards" className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-bottom-4 duration-500">
              <div className="col-span-full p-12 rounded-[4rem] bg-indigo-600 text-white flex flex-col md:flex-row items-center justify-between overflow-hidden relative shadow-2xl mb-6">
                 <div className="z-10 text-center md:text-left">
                    <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
                       <h3 className="text-5xl font-black">Loja de Foco</h3>
-                      <button onClick={() => setActiveModal('createReward')} className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all"><Plus size={24} /></button>
+                      <button id="btn-create-reward" onClick={() => setActiveModal('createReward')} className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all"><Plus size={24} /></button>
                    </div>
                    <p className="text-xl text-indigo-100 font-bold opacity-90">Você trabalhou duro. Hora de se presentear.</p>
                 </div>
