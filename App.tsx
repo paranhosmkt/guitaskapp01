@@ -38,48 +38,54 @@ const URGENCY_POINTS: Record<Urgency, number> = {
 };
 
 // --- MENTOR MESSAGES SYSTEM ---
-const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[], create: string[], goal_completed: string[] }> = {
+const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[], create: string[], goal_completed: string[], inspiration: string[] }> = {
   king: { // Líder (Gabi)
     success: ["Excelente execução. O império cresce.", "Mais uma conquista estratégica.", "Liderança é fazer acontecer. Parabéns."],
     break: ["Pausa estratégica necessária. Recarregar.", "Um bom rei sabe quando descansar.", "O trono aguarda seu retorno. Descanse agora."],
     delayed: ["O plano atrasou. Reajuste a estratégia imediatamente.", "Atrasos acontecem, mas a persistência define o rei.", "Não ignore o prazo. Retome o controle."],
     create: ["Um novo decreto real foi emitido.", "A estratégia foi expandida. Ao trabalho.", "Excelente adição ao plano de domínio."],
-    goal_completed: ["VITÓRIA ABSOLUTA! Seus domínios se expandiram!", "Um monumento será erguido em sua honra. Objetivo conquistado.", "Soberano! Você esmagou esse objetivo com perfeição."]
+    goal_completed: ["VITÓRIA ABSOLUTA! Seus domínios se expandiram!", "Um monumento será erguido em sua honra. Objetivo conquistado.", "Soberano! Você esmagou esse objetivo com perfeição."],
+    inspiration: ["O sol nasce para iluminar seu império. Que suas decisões hoje sejam absolutas.", "Um novo dia, uma nova oportunidade de expansão. Lidere com firmeza.", "A coroa pesa, mas sua vontade é mais forte. Conquiste o dia.", "Levante a cabeça. Seu reinado de produtividade começa agora."]
   },
   coffee: { // Hype (Babu)
     success: ["BOOOOA! DESTRUIU! 🔥", "ISSO AÍ! NINGUÉM TE SEGURA!", "TÁ VOANDO! PRÓXIMA!"],
     break: ["Hora do recreio! Vai pular, correr, beber água!", "PARA TUDO! Pausa pra recarregar a bateria!", "Respira fundo e volta com tudo depois!"],
     delayed: ["Eita! Atrasou? Bora acelerar isso aí!", "Não deixa a peteca cair! Foco total agora!", "Vamos recuperar esse tempo! Velocidade máxima!"],
     create: ["MAIS UMA PRA CONTA! BORA!", "ISSO AÍ! ENCHE ESSA LISTA E DESTRÓI!", "TAREFA NOVA! SANGUE NO OLHO! 🔥"],
-    goal_completed: ["AEEEEEE! ZERAMOS O GAME! VOCÊ É UMA MÁQUINA!", "SENSA-CIO-NAL! OLHA O QUE VOCÊ FEZ! 🔥🔥🔥", "EXPLODIU TUDO! É DISSO QUE EU TÔ FALANDO!"]
+    goal_completed: ["AEEEEEE! ZERAMOS O GAME! VOCÊ É UMA MÁQUINA!", "SENSA-CIO-NAL! OLHA O QUE VOCÊ FEZ! 🔥🔥🔥", "EXPLODIU TUDO! É DISSO QUE EU TÔ FALANDO!"],
+    inspiration: ["ACORDAAAAA! O DIA TÁ LINDO E A GENTE VAI DESTRUIR TUDO (no bom sentido)!", "BOM DIA! Café na mão e foco no talo! Bora fazer história hoje!", "3, 2, 1... VALENDO! O dia começou e você já tá na frente! VAMO!", "HOJE É DIA DE ROCK, BEBÊ! (Ou de trabalho, mas com energia de rock!)"]
   },
   cool: { // Zen (Ari)
     success: ["Um passo de cada vez. A harmonia foi mantida.", "Fluindo como água. Muito bom.", "Sem esforço, apenas foco. Parabéns."],
     break: ["O silêncio é a resposta. Respire.", "Desconecte para reconectar.", "Olhe pela janela. O mundo pode esperar."],
     delayed: ["Sem culpa. O tempo é relativo. Apenas recomece.", "Não se estresse com o atraso. Flua de volta para a tarefa.", "Respire fundo. Tudo vai ser feito no tempo certo."],
     create: ["Intenção definida. Deixe fluir.", "Uma nova semente foi plantada.", "O caminho se abre com este novo passo."],
-    goal_completed: ["O ciclo se fechou perfeitamente. Sinta a paz da conclusão.", "Como um rio que chega ao mar... objetivo alcançado.", "Respire essa vitória. Você fluiu até aqui."]
+    goal_completed: ["O ciclo se fechou perfeitamente. Sinta a paz da conclusão.", "Como um rio que chega ao mar... objetivo alcançado.", "Respire essa vitória. Você fluiu até aqui."],
+    inspiration: ["O dia começa suave. Respire fundo e encontre seu ritmo.", "Sem pressa. O rio corre para o mar no tempo certo. Bom dia.", "Amanheceu. Mantenha a mente clara e o coração leve.", "Seja como a água hoje: contorne os obstáculos sem perder a essência."]
   },
   smart: { // Nerd (Mino)
     success: ["Eficiência notável. Dopamina liberada.", "Tarefa processada com sucesso. Ótimo trabalho.", "Análise concluída: produtividade em alta."],
     break: ["Níveis de neurotransmissores baixos. Reabastecimento necessário.", "Sobrecarga cognitiva iminente. Iniciar protocolo de descanso.", "O cérebro precisa consolidar os dados. Durma ou descanse."],
     delayed: ["Cronograma desviado. Recalculando rota de eficiência.", "A probabilidade de sucesso aumenta se você focar agora.", "Alerta de prazo. Vamos otimizar esse tempo."],
     create: ["Novo nó adicionado ao grafo de tarefas.", "Alocação de recursos iniciada.", "Input recebido. Protocolo de execução aguardando."],
-    goal_completed: ["Objetivo macro processado. Resultado ideal atingido.", "Upgrade de nível confirmado. Eficiência máxima.", "Compilação do projeto finalizada sem erros. Parabéns."]
+    goal_completed: ["Objetivo macro processado. Resultado ideal atingido.", "Upgrade de nível confirmado. Eficiência máxima.", "Compilação do projeto finalizada sem erros. Parabéns."],
+    inspiration: ["Sistema reiniciado. Probabilidade de sucesso hoje: 99.9%.", "Novo ciclo diário iniciado. Otimize seus recursos e execute.", "Dados indicam que hoje é um dia perfeito para ser produtivo. Vamos aos cálculos.", "Carregando módulos de motivação... Completo. Olá, usuário."]
   },
   love: { // Amigo (Liu)
     success: ["Que orgulho de você! ❤️", "Viu como você consegue? Você é incrível!", "Comemore cada vitória, meu anjo!"],
     break: ["Cuide de você um pouquinho. Descansa.", "Você merece uma pausa quentinha no coração.", "Seja gentil consigo mesmo. Pare um pouco."],
     delayed: ["Tudo bem atrasar, não se culpe. Vamos tentar de novo?", "Está difícil? Eu estou aqui com você. Vamos juntos.", "Um dia de cada vez. Não desista por causa de um prazo."],
     create: ["Oba! Um novo começo! ✨", "Vai dar tudo certo, eu acredito em você.", "Mais um passinho na direção do seu sonho!"],
-    goal_completed: ["Eu sabia que você conseguiria! Estou chorando de emoção! ✨", "Olha só para você... Brilhando tanto! ❤️", "Que orgulho! Você merece todo esse sucesso!"]
+    goal_completed: ["Eu sabia que você conseguiria! Estou chorando de emoção! ✨", "Olha só para você... Brilhando tanto! ❤️", "Que orgulho! Você merece todo esse sucesso!"],
+    inspiration: ["Bom dia, raio de sol! Espero que seu dia seja tão incrível quanto você.", "Lembre-se de ser gentil com você hoje. Você vai arrasar!", "Um abraço quentinho pra começar o dia. Vamos fazer coisas lindas juntos?", "Você é capaz de coisas incríveis. Acredite em você como eu acredito!"]
   },
   hippie: { // Criativo (Iza)
     success: ["A energia fluiu perfeitamente. Gratidão.", "Você manifestou essa conquista! ✨", "Sinta a vibração de dever cumprido."],
     break: ["Vá ver o céu. Deixe a mente vagar.", "Conecte-se com o universo lá fora.", "Deixe as ideias decantarem no silêncio."],
     delayed: ["O tempo é uma ilusão humana. Apenas flua.", "Se o fluxo travou, mude a perspectiva.", "Não force. Respire e volte com amor."],
     create: ["Você manifestou uma nova realidade.", "Enviando boas vibrações para essa tarefa.", "O universo conspira a favor desta ação."],
-    goal_completed: ["O universo sorriu para você. Gratidão!", "Essa energia vai ecoar para sempre no cosmos. Lindo!", "A manifestação está completa. Namastê. ✨"]
+    goal_completed: ["O universo sorriu para você. Gratidão!", "Essa energia vai ecoar para sempre no cosmos. Lindo!", "A manifestação está completa. Namastê. ✨"],
+    inspiration: ["O universo alinhou as estrelas para você hoje. Sinta a energia.", "Bom dia! Que a luz do sol energize seus chakras de produtividade.", "Tudo é possível quando vibramos na frequência certa. Manifeste seu dia.", "Sinta a brisa da manhã. Ela traz inspiração e renovação."]
   }
 };
 
@@ -776,10 +782,17 @@ const App: React.FC = () => {
   const lastTickTimestamp = useRef<number>(Date.now());
   const accumulatedFocusSeconds = useRef<number>(0);
 
+  // Helper for initial datetime
+  const getLocalISOString = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+
   // Task/Reward creation states
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskContext, setNewTaskContext] = useState("");
-  const [newTaskDeadline, setNewTaskDeadline] = useState(new Date().toISOString().split('T')[0]);
+  const [newTaskDeadline, setNewTaskDeadline] = useState(getLocalISOString());
   const [newSubTask, setNewSubTask] = useState<{title: string, notes: string, link: string, dueDate: string, urgency: Urgency}>({ title: '', notes: '', link: '', dueDate: '', urgency: 'medium' });
   const [newRewardTitle, setNewRewardTitle] = useState("");
   const [newRewardCost, setNewRewardCost] = useState(50);
@@ -879,7 +892,7 @@ const App: React.FC = () => {
   };
 
   // TRIGGER MENTOR MESSAGE
-  const triggerMentor = (scenario: 'success' | 'break' | 'delayed' | 'create' | 'goal_completed') => {
+  const triggerMentor = (scenario: 'success' | 'break' | 'delayed' | 'create' | 'goal_completed' | 'inspiration') => {
      if (!userAvatar) return;
      const moodId = userAvatar.config.mood;
      const messages = MENTOR_MESSAGES[moodId] || MENTOR_MESSAGES['king'];
@@ -888,7 +901,7 @@ const App: React.FC = () => {
      
      // Specific styling for goal completion
      const type = scenario === 'goal_completed' ? 'celebration' : 'default';
-     const duration = scenario === 'goal_completed' ? 8000 : 6000;
+     const duration = (scenario === 'goal_completed' || scenario === 'inspiration') ? 8000 : 6000;
 
      setMentorNotification({ show: true, message: randomMsg, type });
      
@@ -897,6 +910,24 @@ const App: React.FC = () => {
         setMentorNotification(prev => ({ ...prev, show: false }));
      }, duration);
   };
+
+  // Daily Inspiration Logic
+  useEffect(() => {
+    if (session && userAvatar) {
+       const today = new Date().toDateString();
+       const lastInspiration = localStorage.getItem('guiflow_last_inspiration_date');
+       const tutorialCompleted = localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETED);
+
+       // Only show if not seen today AND tutorial is done (avoid overwhelming new users)
+       if (lastInspiration !== today && tutorialCompleted) {
+          const timer = setTimeout(() => {
+             triggerMentor('inspiration');
+             localStorage.setItem('guiflow_last_inspiration_date', today);
+          }, 2000); // Slight delay for UI load
+          return () => clearTimeout(timer);
+       }
+    }
+  }, [session, userAvatar]);
 
   const handleUpdateMentor = async (newMood: string) => {
     // Optimistic update
@@ -937,9 +968,9 @@ const App: React.FC = () => {
            const hasOverdue = currentTask.subTasks.some(st => {
               if (st.status === 'done' || !st.dueDate) return false;
               const due = new Date(st.dueDate);
-              const today = new Date();
-              today.setHours(0,0,0,0);
-              return due < today;
+              const now = new Date();
+              // Strict timestamp comparison
+              return due < now;
            });
            
            if (hasOverdue) {
@@ -1154,7 +1185,7 @@ const App: React.FC = () => {
     setTasks([...tasks, newTask]);
     setNewTaskTitle(""); 
     setNewTaskContext("");
-    setNewTaskDeadline(new Date().toISOString().split('T')[0]);
+    setNewTaskDeadline(getLocalISOString());
     setActiveModal(null);
     setActiveTaskId(newTask.id);
     setView('local');
@@ -1380,17 +1411,20 @@ const App: React.FC = () => {
   const getFormattedDeadline = (dateStr: string) => {
     if (!dateStr) return null;
     try {
-      // Parse YYYY-MM-DD
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const deadlineDate = new Date(year, month - 1, day);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Create date object from string (handles ISO format including time)
+      const deadlineDate = new Date(dateStr);
+      if (isNaN(deadlineDate.getTime())) return null;
 
-      const formatted = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
-      const isOverdue = deadlineDate < today;
+      const now = new Date();
+      const isOverdue = deadlineDate < now;
       
+      const day = deadlineDate.getDate().toString().padStart(2, '0');
+      const month = (deadlineDate.getMonth() + 1).toString().padStart(2, '0');
+      const hours = deadlineDate.getHours().toString().padStart(2, '0');
+      const minutes = deadlineDate.getMinutes().toString().padStart(2, '0');
+
       return { 
-        text: formatted, 
+        text: `${day}/${month} às ${hours}:${minutes}`, 
         color: isOverdue ? 'text-rose-500' : 'text-emerald-500' 
       };
     } catch (e) {
@@ -1687,7 +1721,7 @@ const App: React.FC = () => {
                     <p className="text-sm font-bold text-slate-500 line-clamp-3 mt-2 leading-relaxed">{task.description}</p>
                   </div>
                   <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                     <p className="text-[10px] font-black uppercase text-slate-400">Finalizado em:</p>
+                     <p className="text-xs font-black uppercase text-slate-400">Finalizado em:</p>
                      <p className="text-xs font-black text-slate-600 dark:text-slate-300 mb-3">{task.completedAt ? new Date(task.completedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Data não registrada'}</p>
                      <button 
                         onClick={(e) => { e.stopPropagation(); recoverTask(task.id); }}
@@ -2241,7 +2275,8 @@ const App: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                    <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo final</label>
-                   <input type="date" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                   {/* Changed to datetime-local for precise timing */}
+                   <input type="datetime-local" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
                 <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">Criar</button>
              </div>
@@ -2310,7 +2345,8 @@ const App: React.FC = () => {
                 
                 <div className="space-y-1">
                    <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo (Opcional)</label>
-                   <input type="date" value={newSubTask.dueDate} onChange={e => setNewSubTask({...newSubTask, dueDate: e.target.value})} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
+                   {/* Changed to datetime-local for precise timing */}
+                   <input type="datetime-local" value={newSubTask.dueDate} onChange={e => setNewSubTask({...newSubTask, dueDate: e.target.value})} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
 
                 <div className="space-y-1">
