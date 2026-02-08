@@ -38,42 +38,48 @@ const URGENCY_POINTS: Record<Urgency, number> = {
 };
 
 // --- MENTOR MESSAGES SYSTEM ---
-const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[], create: string[] }> = {
+const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[], create: string[], goal_completed: string[] }> = {
   king: { // Líder (Gabi)
     success: ["Excelente execução. O império cresce.", "Mais uma conquista estratégica.", "Liderança é fazer acontecer. Parabéns."],
     break: ["Pausa estratégica necessária. Recarregar.", "Um bom rei sabe quando descansar.", "O trono aguarda seu retorno. Descanse agora."],
     delayed: ["O plano atrasou. Reajuste a estratégia imediatamente.", "Atrasos acontecem, mas a persistência define o rei.", "Não ignore o prazo. Retome o controle."],
-    create: ["Um novo decreto real foi emitido.", "A estratégia foi expandida. Ao trabalho.", "Excelente adição ao plano de domínio."]
+    create: ["Um novo decreto real foi emitido.", "A estratégia foi expandida. Ao trabalho.", "Excelente adição ao plano de domínio."],
+    goal_completed: ["VITÓRIA ABSOLUTA! Seus domínios se expandiram!", "Um monumento será erguido em sua honra. Objetivo conquistado.", "Soberano! Você esmagou esse objetivo com perfeição."]
   },
   coffee: { // Hype (Babu)
     success: ["BOOOOA! DESTRUIU! 🔥", "ISSO AÍ! NINGUÉM TE SEGURA!", "TÁ VOANDO! PRÓXIMA!"],
     break: ["Hora do recreio! Vai pular, correr, beber água!", "PARA TUDO! Pausa pra recarregar a bateria!", "Respira fundo e volta com tudo depois!"],
     delayed: ["Eita! Atrasou? Bora acelerar isso aí!", "Não deixa a peteca cair! Foco total agora!", "Vamos recuperar esse tempo! Velocidade máxima!"],
-    create: ["MAIS UMA PRA CONTA! BORA!", "ISSO AÍ! ENCHE ESSA LISTA E DESTRÓI!", "TAREFA NOVA! SANGUE NO OLHO! 🔥"]
+    create: ["MAIS UMA PRA CONTA! BORA!", "ISSO AÍ! ENCHE ESSA LISTA E DESTRÓI!", "TAREFA NOVA! SANGUE NO OLHO! 🔥"],
+    goal_completed: ["AEEEEEE! ZERAMOS O GAME! VOCÊ É UMA MÁQUINA!", "SENSA-CIO-NAL! OLHA O QUE VOCÊ FEZ! 🔥🔥🔥", "EXPLODIU TUDO! É DISSO QUE EU TÔ FALANDO!"]
   },
   cool: { // Zen (Ari)
     success: ["Um passo de cada vez. A harmonia foi mantida.", "Fluindo como água. Muito bom.", "Sem esforço, apenas foco. Parabéns."],
     break: ["O silêncio é a resposta. Respire.", "Desconecte para reconectar.", "Olhe pela janela. O mundo pode esperar."],
     delayed: ["Sem culpa. O tempo é relativo. Apenas recomece.", "Não se estresse com o atraso. Flua de volta para a tarefa.", "Respire fundo. Tudo vai ser feito no tempo certo."],
-    create: ["Intenção definida. Deixe fluir.", "Uma nova semente foi plantada.", "O caminho se abre com este novo passo."]
+    create: ["Intenção definida. Deixe fluir.", "Uma nova semente foi plantada.", "O caminho se abre com este novo passo."],
+    goal_completed: ["O ciclo se fechou perfeitamente. Sinta a paz da conclusão.", "Como um rio que chega ao mar... objetivo alcançado.", "Respire essa vitória. Você fluiu até aqui."]
   },
   smart: { // Nerd (Mino)
     success: ["Eficiência notável. Dopamina liberada.", "Tarefa processada com sucesso. Ótimo trabalho.", "Análise concluída: produtividade em alta."],
     break: ["Níveis de neurotransmissores baixos. Reabastecimento necessário.", "Sobrecarga cognitiva iminente. Iniciar protocolo de descanso.", "O cérebro precisa consolidar os dados. Durma ou descanse."],
     delayed: ["Cronograma desviado. Recalculando rota de eficiência.", "A probabilidade de sucesso aumenta se você focar agora.", "Alerta de prazo. Vamos otimizar esse tempo."],
-    create: ["Novo nó adicionado ao grafo de tarefas.", "Alocação de recursos iniciada.", "Input recebido. Protocolo de execução aguardando."]
+    create: ["Novo nó adicionado ao grafo de tarefas.", "Alocação de recursos iniciada.", "Input recebido. Protocolo de execução aguardando."],
+    goal_completed: ["Objetivo macro processado. Resultado ideal atingido.", "Upgrade de nível confirmado. Eficiência máxima.", "Compilação do projeto finalizada sem erros. Parabéns."]
   },
   love: { // Amigo (Liu)
     success: ["Que orgulho de você! ❤️", "Viu como você consegue? Você é incrível!", "Comemore cada vitória, meu anjo!"],
     break: ["Cuide de você um pouquinho. Descansa.", "Você merece uma pausa quentinha no coração.", "Seja gentil consigo mesmo. Pare um pouco."],
     delayed: ["Tudo bem atrasar, não se culpe. Vamos tentar de novo?", "Está difícil? Eu estou aqui com você. Vamos juntos.", "Um dia de cada vez. Não desista por causa de um prazo."],
-    create: ["Oba! Um novo começo! ✨", "Vai dar tudo certo, eu acredito em você.", "Mais um passinho na direção do seu sonho!"]
+    create: ["Oba! Um novo começo! ✨", "Vai dar tudo certo, eu acredito em você.", "Mais um passinho na direção do seu sonho!"],
+    goal_completed: ["Eu sabia que você conseguiria! Estou chorando de emoção! ✨", "Olha só para você... Brilhando tanto! ❤️", "Que orgulho! Você merece todo esse sucesso!"]
   },
   hippie: { // Criativo (Iza)
     success: ["A energia fluiu perfeitamente. Gratidão.", "Você manifestou essa conquista! ✨", "Sinta a vibração de dever cumprido."],
     break: ["Vá ver o céu. Deixe a mente vagar.", "Conecte-se com o universo lá fora.", "Deixe as ideias decantarem no silêncio."],
     delayed: ["O tempo é uma ilusão humana. Apenas flua.", "Se o fluxo travou, mude a perspectiva.", "Não force. Respire e volte com amor."],
-    create: ["Você manifestou uma nova realidade.", "Enviando boas vibrações para essa tarefa.", "O universo conspira a favor desta ação."]
+    create: ["Você manifestou uma nova realidade.", "Enviando boas vibrações para essa tarefa.", "O universo conspira a favor desta ação."],
+    goal_completed: ["O universo sorriu para você. Gratidão!", "Essa energia vai ecoar para sempre no cosmos. Lindo!", "A manifestação está completa. Namastê. ✨"]
   }
 };
 
@@ -672,16 +678,22 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
 
 const MentorNotification = ({ show, message, avatarConfig, onClose }: any) => {
   if (!show || !avatarConfig) return null;
+  
+  // Is this a grand celebration?
+  const isCelebration = avatarConfig.type === 'celebration';
+
   return (
-    <div className="fixed top-6 right-6 z-[200] w-full max-w-sm animate-in slide-in-from-right duration-500 pointer-events-none">
-        <div className={`relative p-4 rounded-3xl shadow-2xl border-2 flex items-start gap-4 ${avatarConfig.bg} border-white/50 backdrop-blur-md pointer-events-auto`}>
-            <button onClick={onClose} className="absolute top-2 right-2 text-slate-500 hover:text-slate-800 transition-colors"><X size={14} /></button>
-            <div className="w-12 h-12 rounded-2xl bg-white/40 flex items-center justify-center shrink-0 p-1">
+    <div className={`fixed z-[200] w-full animate-in duration-500 pointer-events-none ${isCelebration ? 'inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm' : 'top-6 right-6 max-w-sm slide-in-from-right'}`}>
+        <div className={`relative p-6 rounded-3xl shadow-2xl border-4 flex items-center gap-4 pointer-events-auto transition-all ${isCelebration ? 'bg-white scale-125 border-amber-400 shadow-amber-500/20 max-w-md' : `${avatarConfig.bg} border-white/50 backdrop-blur-md`}`}>
+            <button onClick={onClose} className="absolute top-3 right-3 text-slate-400 hover:text-slate-800 transition-colors"><X size={isCelebration ? 20 : 14} /></button>
+            <div className={`${isCelebration ? 'w-24 h-24 border-4 border-amber-200 shadow-inner' : 'w-12 h-12 p-1'} rounded-2xl bg-white/40 flex items-center justify-center shrink-0`}>
                 <CapybaraAvatar mood={avatarConfig.mood} />
             </div>
             <div className="flex-1 pr-4">
-                <p className="text-[10px] font-black uppercase text-slate-500/80 mb-1">Mentor Diz:</p>
-                <p className="text-sm font-bold text-slate-800 leading-snug">{message}</p>
+                <p className={`font-black uppercase mb-1 ${isCelebration ? 'text-amber-500 text-xs tracking-widest' : 'text-[10px] text-slate-500/80'}`}>
+                   {isCelebration ? '🎉 Conquista Desbloqueada!' : 'Mentor Diz:'}
+                </p>
+                <p className={`font-bold text-slate-800 leading-snug ${isCelebration ? 'text-xl' : 'text-sm'}`}>{message}</p>
             </div>
         </div>
     </div>
@@ -742,7 +754,7 @@ const App: React.FC = () => {
   const [rankingTab, setRankingTab] = useState<'points' | 'time'>('points');
   
   // Mentor State
-  const [mentorNotification, setMentorNotification] = useState<{ show: boolean, message: string }>({ show: false, message: '' });
+  const [mentorNotification, setMentorNotification] = useState<{ show: boolean, message: string, type: 'default' | 'celebration' }>({ show: false, message: '', type: 'default' });
 
   // Tutorial State
   const [tutorialStep, setTutorialStep] = useState<number>(-1);
@@ -867,19 +879,23 @@ const App: React.FC = () => {
   };
 
   // TRIGGER MENTOR MESSAGE
-  const triggerMentor = (scenario: 'success' | 'break' | 'delayed' | 'create') => {
+  const triggerMentor = (scenario: 'success' | 'break' | 'delayed' | 'create' | 'goal_completed') => {
      if (!userAvatar) return;
      const moodId = userAvatar.config.mood;
      const messages = MENTOR_MESSAGES[moodId] || MENTOR_MESSAGES['king'];
      const scenarioMessages = messages[scenario];
      const randomMsg = scenarioMessages[Math.floor(Math.random() * scenarioMessages.length)];
      
-     setMentorNotification({ show: true, message: randomMsg });
+     // Specific styling for goal completion
+     const type = scenario === 'goal_completed' ? 'celebration' : 'default';
+     const duration = scenario === 'goal_completed' ? 8000 : 6000;
+
+     setMentorNotification({ show: true, message: randomMsg, type });
      
-     // Auto hide after 6 seconds
+     // Auto hide after duration
      setTimeout(() => {
         setMentorNotification(prev => ({ ...prev, show: false }));
-     }, 6000);
+     }, duration);
   };
 
   // Check for delayed tasks when switching to local view
@@ -912,6 +928,12 @@ const App: React.FC = () => {
        const audio2 = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
        audio2.play().catch(() => {});
     }, 800);
+  };
+
+  // Helper to play win sound
+  const playWinSound = () => {
+     const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'); // Short success chime
+     audio.play().catch(e => console.log("Audio play failed", e));
   };
 
   // Helper to send browser notification
@@ -1185,6 +1207,10 @@ const App: React.FC = () => {
     confetti({ particleCount: 200, spread: 90, origin: { y: 0.5 }, scalar: 1.2, gravity: 0.8 });
     setActiveTaskId(null);
     setView('history');
+    
+    // Trigger special goal completion effects
+    playWinSound();
+    triggerMentor('goal_completed');
   };
 
   const recoverTask = (taskId: string) => {
