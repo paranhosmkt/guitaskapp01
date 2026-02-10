@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   LayoutDashboard, Target, Trophy, Plus, CheckCircle2, Zap, X, GripVertical, Gift, PlusCircle, Briefcase, Play, Pause, RotateCcw, Coffee, Timer, ChevronRight, Pencil, Trash2, Lightbulb, AlertCircle, Calendar, History, Clock, Sun, Moon, ArrowLeft, MessageSquare, Save, Star, BatteryLow, BatteryMedium, BatteryFull, Link2, ExternalLink, FileText, Settings, CalendarCheck, Check, Archive, Download, Upload, LogIn, UserPlus, CreditCard, Crown, LogOut, CheckCircle, MoreHorizontal, Settings2, Maximize2, Minimize2, Flame, AlertTriangle, Receipt, Copy, User, Smile, Heart, Glasses, BarChart2, Medal, Lock, PanelLeftClose, PanelLeftOpen, BellRing, Sparkles, Brain, Rocket, Map, ListChecks, Hourglass
@@ -1587,6 +1588,16 @@ const App: React.FC = () => {
          onNext={handleTutorialNext}
          onSkip={handleTutorialSkip}
       />
+
+      {/* Mobile Header */}
+      <header className={`md:hidden flex items-center justify-center py-4 sticky top-0 z-[45] border-b ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-100'} backdrop-blur-md`}>
+         <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
+               <Zap size={18} fill="currentColor" />
+            </div>
+            <h1 className="text-xl font-black tracking-tighter leading-none text-indigo-600">GUITASK</h1>
+         </div>
+      </header>
 
       {/* Nav */}
       <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl transition-all duration-300 ease-in-out md:w-${isSidebarCollapsed ? '24' : '64'}`}>
