@@ -22,7 +22,8 @@ const STORAGE_KEYS = {
   TUTORIAL_COMPLETED: 'guiflow_tutorial_completed_v2' // Bumped version to force new tutorial
 };
 
-const STRIPE_LINK = 'https://buy.stripe.com/8x214o14E0FB8TF5NNcEw00';
+const STRIPE_PRO_LINK = 'https://buy.stripe.com/4gMbJ2bJibkf4DpdgfcEw01';
+const STRIPE_PRO_AI_LINK = 'https://buy.stripe.com/aFadRaeVu4VR7PBb87cEw02';
 
 const URGENCY_CONFIG: Record<Urgency, { label: string, color: string, bg: string, icon: any }> = {
   critical: { label: 'Urgente', color: 'text-rose-600', bg: 'bg-rose-100', icon: Flame },
@@ -38,6 +39,34 @@ const URGENCY_POINTS: Record<Urgency, number> = {
   critical: 100
 };
 
+// --- LOGO COMPONENT ---
+const Logo = ({ size = "md", isDark = false, showSlogan = true, className = "" }: { size?: "sm" | "md" | "lg" | "xl", isDark?: boolean, showSlogan?: boolean, className?: string }) => {
+  const sizes = {
+    sm: { square: "w-8 h-8", icon: 16, text: "text-lg", slogan: "text-[8px]" },
+    md: { square: "w-10 h-10", icon: 20, text: "text-2xl", slogan: "text-[10px]" },
+    lg: { square: "w-12 h-12", icon: 24, text: "text-3xl", slogan: "text-[11px]" },
+    xl: { square: "w-16 h-16", icon: 32, text: "text-4xl", slogan: "text-[13px]" }
+  };
+  const config = sizes[size];
+  const textColor = isDark ? "text-white" : "text-slate-900";
+  
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      <div className={`${config.square} bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0`}>
+        <Zap size={config.icon} fill="currentColor" />
+      </div>
+      <div className="flex flex-col">
+        <h1 className={`${config.text} font-black tracking-tighter leading-none ${textColor}`}>Guitask</h1>
+        {showSlogan && (
+          <p className={`${config.slogan} font-bold text-slate-400 leading-none mt-1`}>
+            Clareza para mentes inquietas.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // --- MENTOR MESSAGES SYSTEM ---
 const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], delayed: string[], create: string[], goal_completed: string[], inspiration: string[] }> = {
   king: { // Líder (Gabi)
@@ -46,14 +75,14 @@ const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], dela
     delayed: ["O plano atrasou. Reajuste a estratégia imediatamente.", "Atrasos acontecem, mas a persistência define o rei.", "Não ignore o prazo. Retome o controle."],
     create: ["Um novo decreto real foi emitido.", "A estratégia foi expandida. Ao trabalho.", "Excelente adição ao plano de domínio."],
     goal_completed: ["VITÓRIA ABSOLUTA! Seus domínios se expandiram!", "Um monumento será erguido em sua honra. Objetivo conquistado.", "Soberano! Você esmagou esse objetivo com perfeição."],
-    inspiration: ["O sol nasce para iluminar seu império. Que suas decisões hoje sejam absolutas.", "Um novo dia, uma nova oportunidade de expansão. Lidere com firmeza.", "A coroa pesa, mas sua vontade é mais forte. Conquiste o dia.", "Levante a cabeça. Seu reinado de produtividade começa agora."]
+    inspiration: ["O sol nasce para iluminar seu império. Que suas decisões hoje sejam absolutas.", "Um novo dia, uma nova oportunidade de expansão. Lidere com firmeza.", "A coroa pesa, mas sua vontade é more forte. Conquiste o dia.", "Levante a cabeça. Seu reinado de produtividade começa agora."]
   },
   coffee: { // Hype (Babu)
     success: ["BOOOOA! DESTRUIU! 🔥", "ISSO AÍ! NINGUÉM TE SEGURA!", "TÁ VOANDO! PRÓXIMA!"],
     break: ["Hora do recreio! Vai pular, correr, beber água!", "PARA TUDO! Pausa pra recarregar a bateria!", "Respira fundo e volta com tudo depois!"],
     delayed: ["Eita! Atrasou? Bora acelerar isso aí!", "Não deixa a peteca cair! Foco total agora!", "Vamos recuperar esse tempo! Velocidade máxima!"],
     create: ["MAIS UMA PRA CONTA! BORA!", "ISSO AÍ! ENCHE ESSA LISTA E DESTRÓI!", "TAREFA NOVA! SANGUE NO OLHO! 🔥"],
-    goal_completed: ["AEEEEEE! ZERAMOS O GAME! VOCÊ É UMA MÁQUINA!", "SENSA-CIO-NAL! OLHA O QUE VOCÊ FEZ! 🔥🔥🔥", "EXPLODIU TUDO! É DISSO QUE EU TÔ FALANDO!"],
+    goal_completed: ["AEEEEEE! ZERAMOS O GAME! VOCÊ É UMA MÁQUINA!", "SENSA-CIO-NAL! OLHA O QUE VOCÊ FEZ! 🔥🔥🔥", "EXPLODIU TUDO! É DISSO QUE EU TÔ falando!"],
     inspiration: ["ACORDAAAAA! O DIA TÁ LINDO E A GENTE VAI DESTRUIR TUDO (no bom sentido)!", "BOM DIA! Café na mão e foco no talo! Bora fazer história hoje!", "3, 2, 1... VALENDO! O dia começou e você já tá na frente! VAMO!", "HOJE É DIA DE ROCK, BEBÊ! (Ou de trabalho, mas com energia de rock!)"]
   },
   cool: { // Zen (Ari)
@@ -68,7 +97,7 @@ const MENTOR_MESSAGES: Record<string, { success: string[], break: string[], dela
     success: ["Eficiência notável. Dopamina liberada.", "Tarefa processada com sucesso. Ótimo trabalho.", "Análise concluída: produtividade em alta."],
     break: ["Níveis de neurotransmissores baixos. Reabastecimento necessário.", "Sobrecarga cognitiva iminente. Iniciar protocolo de descanso.", "O cérebro precisa consolidar os dados. Durma ou descanse."],
     delayed: ["Cronograma desviado. Recalculando rota de eficiência.", "A probabilidade de sucesso aumenta se você focar agora.", "Alerta de prazo. Vamos otimizar esse tempo."],
-    create: ["Novo nó adicionado ao grafo de tarefas.", "Alocação de recursos iniciada.", "Input recebido. Protocolo de execução aguardando."],
+    create: ["Novo nó adicionado ao grafo de tarefas.", "Alocação de recursos iniciada.", "Input received. Protocolo de execução aguardando."],
     goal_completed: ["Objetivo macro processado. Resultado ideal atingido.", "Upgrade de nível confirmado. Eficiência máxima.", "Compilação do projeto finalizada sem erros. Parabéns."],
     inspiration: ["Sistema reiniciado. Probabilidade de sucesso hoje: 99.9%.", "Novo ciclo diário iniciado. Otimize seus recursos e execute.", "Dados indicam que hoje é um dia perfeito para ser produtivo. Vamos aos cálculos.", "Carregando módulos de motivação... Completo. Olá, usuário."]
   },
@@ -95,11 +124,11 @@ const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | nul
   king: [
     { view: 'global', highlightId: null, title: "Saudações, Estrategista.", text: "Eu sou Gabi, seu conselheiro real. Minha função é garantir que seu império de produtividade seja construído sobre bases sólidas. Vamos inspecionar seus domínios?" },
     { view: 'global', highlightId: 'btn-create-macro', title: "1. A Grande Visão (Macro)", text: "Todo grande reinado começa com um decreto. Use este botão para definir seus Objetivos Estratégicos. Foque no destino final, não nas batalhas menores." },
-    { view: 'local', highlightId: 'objective-header', title: "2. O Campo de Batalha", text: "Ao selecionar um objetivo, você entra na sala de guerra. Aqui você visualiza o contexto e suas referências. Clareza é poder." },
+    { view: 'local', highlightId: 'objective-header', title: "2. O Campo de Batalha", text: "Ao selecionar um objective, você entra na sala de guerra. Aqui você visualiza o contexto e suas referências. Clareza é poder." },
     { view: 'local', highlightId: 'btn-add-subtask', title: "3. Dividir para Conquistar", text: "Um exército não vence sem pelotões. Quebre o objetivo grande em missões menores e executáveis aqui. Esmague a resistência da procrastinação." },
     { view: 'local', highlightId: 'container-timer', title: "4. Cronometrar o Ataque", text: "O tempo é seu recurso mais valioso. Use o Pomodoro para executar ataques focados. Eu estarei aqui garantindo a disciplina." },
     { view: 'ranking', highlightId: 'container-ranking', title: "5. Hall da Fama", text: "A glória é eterna. Ganhe XP por cada conquista e suba no ranking semanal. Mostre a todos quem manda." },
-    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Espólios de Guerra", text: "Um rei celebra suas vitórias. Defina recompensas reais para si mesmo e troque seus pontos aqui. Você merece o banquete." }
+    { view: 'rewards', highlightId: 'container-rewards', title: "6. Espólios de Guerra", text: "Um rei celebra suas vitórias. Defina recompensas reais para si mesmo e troque seus pontos aqui. Você merece o banquete." }
   ],
   coffee: [
     { view: 'global', highlightId: null, title: "E AÍ!!! ⚡️", text: "Eu sou o Babu e eu tô LIGADO NO 220V! Bora fazer acontecer? Sem tempo a perder, a gente vai destruir essa lista de tarefas! VEM COMIGO!" },
@@ -108,7 +137,7 @@ const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | nul
     { view: 'local', highlightId: 'btn-add-subtask', title: "3. TRITURAR TAREFAS", text: "A meta é grande? QUEBRA ELA! Transforma aquele monstro em pedacinhos fáceis de engolir! Vapo vapo!" },
     { view: 'local', highlightId: 'container-timer', title: "4. HORA DO RUSH! ⏱️", text: "Liga esse timer e NÃO PARA! É foco total, adrenalina pura! Eu vou ficar pulando aqui do lado pra te animar!" },
     { view: 'ranking', highlightId: 'container-ranking', title: "5. O PÓDIO É NOSSO 🏆", text: "Faz tarefa, ganha XP, sobe no ranking! Vamos passar todo mundo! EU QUERO ESSE PRIMEIRO LUGAR!" },
-    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. A MELHOR PARTE 🎁", text: "Trabalhou muito? TEM PRÊMIO! Cadastra aquele café, aquele doce, aquela série! Troca seus pontos e SE JOGA!" }
+    { view: 'rewards', highlightId: 'container-rewards', title: "6. A MELHOR PARTE 🎁", text: "Trabalhou muito? TEM PRÊMIO! Cadastra aquele café, aquele doce, aquela série! Troca seus pontos e SE JOGA!" }
   ],
   cool: [
     { view: 'global', highlightId: null, title: "Namastê. 🍃", text: "Oi, eu sou a Ari. Que bom que você está aqui. Vamos organizar sua mente sem pressão, no seu tempo. Respire fundo... e vamos fluir." },
@@ -117,7 +146,7 @@ const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | nul
     { view: 'local', highlightId: 'btn-add-subtask', title: "3. Pequenos Passos", text: "Não tente abraçar o mundo. Divida a montanha em pedrinhas aqui. Um passo de cada vez, com calma e presença." },
     { view: 'local', highlightId: 'container-timer', title: "4. Fluxo Temporal", text: "O tempo não é inimigo. Use o timer para entrar em estado de fluxo. Eu te acompanho em silêncio enquanto você foca." },
     { view: 'ranking', highlightId: 'container-ranking', title: "5. Jornada Compartilhada", text: "Veja seu progresso e o dos outros. Sem competição tóxica, apenas a celebração de estarmos todos caminhando." },
-    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Autocuidado", text: "Ser produtivo também é se cuidar. Defina mimos para você e use seus pontos para lembrar de ser gentil consigo mesmo." }
+    { view: 'rewards', highlightId: 'container-rewards', title: "6. Autocuidado", text: "Ser produtivo também é se cuidar. Defina mimos para você e use seus pontos para lembrar de ser gentil consigo mesmo." }
   ],
   smart: [
     { view: 'global', highlightId: null, title: "Olá. Sistema Online.", text: "Sou Mino. Minha heurística indica que você busca otimização cognitiva. Vou guiá-lo pelos protocolos de eficiência da plataforma." },
@@ -126,7 +155,7 @@ const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | nul
     { view: 'local', highlightId: 'btn-add-subtask', title: "3. Granularidade", text: "Decomponha o problema complexo em unidades atômicas de trabalho. Subtarefas menores aumentam a taxa de conclusão e dopamina." },
     { view: 'local', highlightId: 'container-timer', title: "4. Técnica Pomodoro", text: "Ative o cronômetro para blocos de foco intenso. A gestão temporal é crítica para evitar a fadiga sináptica. Estarei monitorando." },
     { view: 'ranking', highlightId: 'container-ranking', title: "5. Métricas Comparativas", text: "A gamificação aumenta o engajamento. Analise seu desempenho relativo no ranking semanal baseando-se em XP acumulado." },
-    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Reforço Positivo", text: "O cérebro requer incentivos. Configure recompensas tangíveis e efetue a troca por pontos para fechar o ciclo de hábito." }
+    { view: 'rewards', highlightId: 'container-rewards', title: "6. Reforço Positivo", text: "O cérebro requer incentivos. Configure recompensas tangíveis e efetue a troca por pontos para fechar o ciclo de hábito." }
   ],
   love: [
     { view: 'global', highlightId: null, title: "Oiê, meu anjo! ❤️", text: "Sou a Liu e tô tão feliz de te ver! Eu sei que às vezes é difícil, mas eu vou segurar sua mão. Vamos organizar tudo com muito carinho?" },
@@ -135,7 +164,7 @@ const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | nul
     { view: 'local', highlightId: 'btn-add-subtask', title: "3. Passinhos de Bebê", text: "Se parecer muito difícil, a gente divide! Cria tarefinhas bem pequenas aqui. Cada check é um abraço que você se dá!" },
     { view: 'local', highlightId: 'container-timer', title: "4. Tempo de Carinho", text: "Vamos focar um pouquinho? Liga o timer. Se cansar, a gente para. O importante é tentar. Estou aqui com você." },
     { view: 'ranking', highlightId: 'container-ranking', title: "5. Mural do Orgulho", text: "Olha o quanto você brilhou! Ganhe pontos e veja como você é capaz. Eu tenho tanto orgulho de você no ranking!" },
-    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Mimos pra Você", text: "Você merece tudo de bom! Escolha presentes que te façam sorrir e troque seus pontinhos. Cuide do seu coração." }
+    { view: 'rewards', highlightId: 'container-rewards', title: "6. Mimos pra Você", text: "Você merece tudo de bom! Escolha presentes que te façam sorrir e troque seus pontinhos. Cuide do seu coração." }
   ],
   hippie: [
     { view: 'global', highlightId: null, title: "Salve, ser de luz! ✨", text: "Eu sou a Iza. Sinto que a energia aqui tá pronta pra mudar. Vamos alinhar seus chakras da produtividade e fazer a criatividade fluir?" },
@@ -144,7 +173,7 @@ const TUTORIAL_CONTENT: Record<string, { view: string, highlightId: string | nul
     { view: 'local', highlightId: 'btn-add-subtask', title: "3. Fluindo nos Detalhes", text: "Não deixe a energia estagnar. Quebre a visão em ações aqui. Deixe fluir, uma tarefa leva a outra organicamente." },
     { view: 'local', highlightId: 'container-timer', title: "4. Ritmo Natural", text: "O tempo é uma ilusão, mas o timer ajuda a canalizar o foco. Use-o para mergulhar no agora. Esteja presente na tarefa." },
     { view: 'ranking', highlightId: 'container-ranking', title: "5. Egrégora Coletiva", text: "Somos todos um. No ranking, você vê a energia de todo mundo se movendo. Suba e espalhe boas vibrações." },
-    { view: 'rewards', highlightId: 'btn-create-reward', title: "6. Troca Energética", text: "Tudo é troca. Você deu energia pro trabalho, agora receba de volta. Crie recompensas que nutram sua alma." }
+    { view: 'rewards', highlightId: 'container-rewards', title: "6. Troca Energética", text: "Tudo é troca. Você deu energia pro trabalho, agora receba de volta. Crie recompensas que nutram sua alma." }
   ]
 };
 
@@ -316,11 +345,11 @@ const TutorialOverlay = ({ step, steps, avatarConfig, onNext, onSkip }: any) => 
   );
 };
 
-const Modal = ({ title, onClose, children, isDark }: any) => (
+const Modal = ({ title, onClose, children, isDark, maxWidth = "max-w-lg" }: any) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300 overflow-y-auto">
-    <div className={`relative w-full max-w-lg rounded-[3.5rem] p-12 my-10 shadow-2xl animate-in zoom-in-95 fade-in duration-300 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
-      <button onClick={onClose} className="absolute right-10 top-10 text-slate-400 hover:text-slate-600 hover:rotate-90 transition-all"><X size={28} /></button>
-      <h3 className={`text-3xl font-black mb-10 tracking-tighter leading-tight ${isDark ? 'text-white' : 'text-black'}`}>{title}</h3>
+    <div className={`relative w-full ${maxWidth} rounded-[3.5rem] p-8 md:p-12 my-10 shadow-2xl animate-in zoom-in-95 fade-in duration-300 border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
+      <button onClick={onClose} className="absolute right-6 top-6 md:right-10 md:top-10 text-slate-400 hover:text-slate-600 hover:rotate-90 transition-all"><X size={28} /></button>
+      <h3 className={`text-2xl md:text-3xl font-black mb-8 md:mb-10 tracking-tighter leading-tight ${isDark ? 'text-white' : 'text-black'}`}>{title}</h3>
       {children}
     </div>
   </div>
@@ -332,12 +361,7 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
       {/* Nav */}
       <nav className={`p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-top-4 duration-700 sticky top-0 z-50 ${isDark ? 'bg-slate-950/80' : 'bg-white/90'} backdrop-blur-md border-b ${isDark ? 'border-slate-800' : 'border-slate-50'}`}>
          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0">
-               <Zap size={24} fill="currentColor" />
-            </div>
-            <h1 className={`text-3xl font-black tracking-tighter leading-none hidden md:block ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              GUITASK<span className="text-indigo-600">.</span>
-            </h1>
+            <Logo size="lg" isDark={isDark} />
          </div>
          <div className="flex gap-4">
             <button onClick={onLogin} className="text-sm font-black uppercase text-slate-600 hover:text-indigo-600 transition-colors">Entrar</button>
@@ -373,7 +397,7 @@ const LandingPage = ({ onStart, onLogin, isDark }: { onStart: () => void, onLogi
       </section>
 
       {/* Features Grid */}
-      <section className={`px-6 py-24 border-y ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
+      <section className={`px-6 py-24 border-y ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-100'}`}>
          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className={`p-8 rounded-[3rem] border transition-all group ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -623,11 +647,7 @@ const AuthScreen = ({ theme, onGuestAccess }: { theme: string, onGuestAccess: ()
     <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${isDark ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'}`}>
       <div className={`w-full max-w-[450px] overflow-hidden rounded-[3.5rem] shadow-2xl border transition-all duration-500 animate-in fade-in zoom-in-95 duration-300 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="p-10 pb-6 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl mb-6 group hover:rotate-12 transition-transform duration-300">
-            <Zap size={40} fill="currentColor" />
-          </div>
-          <h2 className="text-4xl font-black tracking-tighter leading-none mb-1 text-indigo-600">GUITASK</h2>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Clareza para mentes inquietas.</p>
+          <Logo size="xl" className="mb-6 justify-center" />
         </div>
         <div className="px-10 pb-12 space-y-6">
           <div className="flex p-1.5 rounded-2xl border border-slate-100 dark:border-slate-800">
@@ -1352,7 +1372,7 @@ const App: React.FC = () => {
   const duplicateTask = (e: React.MouseEvent, task: Task) => {
     e.stopPropagation();
     if (!isPro && tasks.length >= 1) {
-        alert("Versão gratuita permite apenas 1 objetivo ativo por vez. Atualize para PRO!");
+        setActiveModal('macro'); // Force the limit modal
         return;
     }
 
@@ -1392,7 +1412,7 @@ const App: React.FC = () => {
       if (!activeTaskId) return;
       const currentTask = tasks.find(t => t.id === activeTaskId);
       if (!isPro && currentTask && currentTask.subTasks.length >= 1) {
-          alert("Versão gratuita permite apenas 1 atividade em foco por vez. Atualize para PRO!");
+          setActiveModal('subtask'); // Force the limit modal
           return;
       }
 
@@ -1490,19 +1510,14 @@ const App: React.FC = () => {
     }
   };
   
-  // ... (Leaderboard Logic) ...
   // Ranking Calculation
   const leaderboardData = useMemo(() => {
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Calculate User's Weekly Stats
-    // 1. Points: Sum rewards of macro tasks completed in the last 7 days + active work
-    // For simplicity in this demo, we'll use completedTasks list filter
     let weeklyPoints = 0;
     let weeklyTime = 0;
 
-    // From Completed Tasks (History)
     completedTasks.forEach(t => {
        if (t.completedAt && new Date(t.completedAt) > oneWeekAgo) {
           weeklyPoints += t.rewardPoints;
@@ -1510,17 +1525,10 @@ const App: React.FC = () => {
        }
     });
 
-    // From Active Tasks (Approximation: active tasks' totalTimeSpent counts towards this week for demo purposes)
     tasks.forEach(t => {
        weeklyTime += (t.totalTimeSpent || 0);
-       // We don't add points from active tasks as they are not "completed" yet to award points in this model, 
-       // but strictly speaking, subtasks award XP immediately. 
-       // Let's iterate subtasks to be precise if we wanted, but sticking to macro points for consistency with the prompt logic usually implies "score".
-       // However, we do award points on subtask completion.
        t.subTasks.forEach(s => {
           if(s.status === 'done') {
-             // If we had a timestamp for subtask completion, we'd filter. 
-             // We'll assume for this weekly view that active task subtask completions are recent.
              weeklyPoints += s.rewardPoints;
           }
        });
@@ -1534,10 +1542,9 @@ const App: React.FC = () => {
        points: weeklyPoints,
        time: weeklyTime,
        isMe: true,
-       isPro: isPro // Add status to ranking
+       isPro: isPro 
     };
 
-    // Generate Randomized Stats for Mock Users based on current user performance to keep it competitive
     const basePoints = Math.max(100, weeklyPoints);
     const baseTime = Math.max(60, weeklyTime);
 
@@ -1545,13 +1552,11 @@ const App: React.FC = () => {
        ...u,
        points: Math.floor(Math.random() * (basePoints * 1.5)) + 50,
        time: Math.floor(Math.random() * (baseTime * 1.5)) + 30,
-       isPro: Math.random() > 0.6 // Randomly assign pro status to mock users
+       isPro: Math.random() > 0.6 
     }));
 
-    // Add current user
     const allUsers = [...rankedUsers, currentUser];
 
-    // Sort function depends on active tab, will handle in render or return both sorted lists
     return {
        byPoints: [...allUsers].sort((a, b) => b.points - a.points),
        byTime: [...allUsers].sort((a, b) => b.time - a.time)
@@ -1560,7 +1565,77 @@ const App: React.FC = () => {
 
   const currentLeaderboard = rankingTab === 'points' ? leaderboardData.byPoints : leaderboardData.byTime;
 
-  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Zap className="text-indigo-600 animate-bounce" size={48} /></div>;
+  // Plan Pricing Section Component
+  const UpgradePlans = ({ title, description }: { title: string, description: string }) => (
+    <div className="space-y-8 text-center animate-in fade-in zoom-in-95 duration-500">
+      <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto text-amber-500 mb-2">
+         <Lock size={32} />
+      </div>
+      <div>
+         <h4 className="text-2xl font-black text-indigo-600 mb-2">{title}</h4>
+         <p className="text-sm font-bold text-slate-500 max-w-sm mx-auto">{description}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Plano PRO */}
+        <div className={`p-6 rounded-[2.5rem] border-2 text-left flex flex-col justify-between transition-all hover:scale-[1.02] ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+               <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                  <Crown size={20} />
+                  <span className="font-black uppercase text-xs tracking-widest">Plano Pro</span>
+               </div>
+               <div className="text-right">
+                  <p className="text-lg font-black text-indigo-600">R$ 29,90</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">/mensais</p>
+               </div>
+            </div>
+            <ul className="space-y-3 text-xs font-bold text-slate-600 dark:text-slate-400 mb-8">
+               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Objetivos Ilimitados</li>
+               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Tarefas Ilimitadas</li>
+               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Tag PRO no Ranking</li>
+               <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Histórico Completo</li>
+            </ul>
+          </div>
+          <a href={STRIPE_PRO_LINK} target="_blank" rel="noreferrer" className="w-full py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase shadow-lg text-center hover:bg-indigo-700 transition-colors">
+             Assinar Pro
+          </a>
+        </div>
+
+        {/* Plano PRO AI */}
+        <div className={`p-6 rounded-[2.5rem] border-2 text-left flex flex-col justify-between transition-all hover:scale-[1.02] relative overflow-hidden ${isDark ? 'bg-indigo-900/20 border-indigo-500/50' : 'bg-indigo-50 border-indigo-200'}`}>
+          <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+             <Sparkles size={60} className="text-indigo-600" />
+          </div>
+          <div className="z-10">
+            <div className="flex items-center justify-between mb-4">
+               <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+                  <Brain size={20} />
+                  <span className="font-black uppercase text-xs tracking-widest">Plano Pro AI</span>
+               </div>
+               <div className="text-right">
+                  <p className="text-lg font-black text-indigo-700">R$ 79,90</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">/mensais</p>
+               </div>
+            </div>
+            <ul className="space-y-3 text-xs font-bold text-slate-700 dark:text-slate-300 mb-8">
+               <li className="flex items-center gap-2"><Sparkles size={14} className="text-amber-500" /> Tudo do Plano Pro</li>
+               <li className="flex items-center gap-2"><Sparkles size={14} className="text-amber-500" /> Chat com Mentor Capivara</li>
+               <li className="flex items-center gap-2"><Sparkles size={14} className="text-amber-500" /> Mentor cria Metas e Tarefas</li>
+               <li className="flex items-center gap-2"><Sparkles size={14} className="text-amber-500" /> Suporte Personalizado</li>
+            </ul>
+          </div>
+          <a href={STRIPE_PRO_AI_LINK} target="_blank" rel="noreferrer" className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-black text-xs uppercase shadow-lg text-center hover:scale-105 transition-all">
+             Assinar Pro AI
+          </a>
+        </div>
+      </div>
+      
+      <p className="text-[10px] font-black uppercase text-slate-400">Cancele a qualquer momento. Pagamento 100% seguro.</p>
+    </div>
+  );
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Logo size="lg" className="animate-bounce" /></div>;
   
   if (!session) {
      if (showLanding) {
@@ -1572,7 +1647,6 @@ const App: React.FC = () => {
   return (
     <div className={`min-h-screen pb-24 md:pb-0 ${isSidebarCollapsed ? 'md:pl-24' : 'md:pl-64'} flex flex-col transition-all duration-300 ease-in-out ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       
-      {/* Mentor Notification Component */}
       <MentorNotification 
          show={mentorNotification.show} 
          message={mentorNotification.message} 
@@ -1580,7 +1654,6 @@ const App: React.FC = () => {
          onClose={() => setMentorNotification({ ...mentorNotification, show: false })}
       />
 
-      {/* Tutorial Overlay */}
       <TutorialOverlay 
          step={tutorialStep}
          steps={currentTutorialSteps}
@@ -1589,20 +1662,11 @@ const App: React.FC = () => {
          onSkip={handleTutorialSkip}
       />
 
-      {/* Mobile Header */}
       <header className={`md:hidden flex items-center justify-center py-4 sticky top-0 z-[45] border-b ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-100'} backdrop-blur-md`}>
-         <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md">
-               <Zap size={18} fill="currentColor" />
-            </div>
-            <h1 className="text-xl font-black tracking-tighter leading-none text-indigo-600">GUITASK</h1>
-         </div>
+         <Logo size="md" isDark={isDark} showSlogan={false} />
       </header>
 
-      {/* Nav */}
       <nav className={`fixed bottom-0 left-0 w-full h-20 ${isDark ? 'bg-slate-900' : 'bg-white'} border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} flex items-center justify-around z-50 md:top-0 md:left-0 md:h-full md:flex-col md:justify-start md:p-6 md:border-r shadow-2xl transition-all duration-300 ease-in-out md:w-${isSidebarCollapsed ? '24' : '64'}`}>
-        {/* ... Nav Content ... */}
-        {/* Sidebar Toggle (Desktop Only) */}
         <button 
            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
            className={`hidden md:flex absolute -right-3 top-12 bg-indigo-600 text-white p-1 rounded-full shadow-lg border-2 ${isDark ? 'border-slate-900' : 'border-slate-50'} z-50 hover:scale-110 transition-transform`}
@@ -1611,20 +1675,18 @@ const App: React.FC = () => {
         </button>
 
         <div className="hidden md:flex flex-col items-start gap-8 mb-10 w-full h-full">
-          {/* TOP: Fixed Logo */}
-          <div className={`flex items-center gap-3 px-2 ${isSidebarCollapsed ? 'justify-center w-full' : ''}`}>
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
-               <Zap size={22} fill="currentColor" />
-            </div>
-            {!isSidebarCollapsed && (
+          <div className={`flex items-center px-2 ${isSidebarCollapsed ? 'justify-center w-full' : ''}`}>
+            {isSidebarCollapsed ? (
+               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+                  <Zap size={22} fill="currentColor" />
+               </div>
+            ) : (
                <div className="animate-in fade-in slide-in-from-left-4 duration-300">
-                  <h1 className="text-3xl font-black tracking-tighter leading-none text-[#4b47df]">GUITASK</h1>
-                  <p className="text-[10px] font-bold text-slate-400">Clareza para mentes inquietas.</p>
+                  <Logo size="lg" isDark={isDark} />
                </div>
             )}
           </div>
 
-          {/* MIDDLE: Nav Items */}
           <div className="w-full space-y-2 flex-1">
             <NavItem collapsed={isSidebarCollapsed} active={view === 'global'} onClick={() => setView('global')} icon={<LayoutDashboard size={20} />} label="Geral" isDark={isDark} />
             <NavItem collapsed={isSidebarCollapsed} active={view === 'local'} onClick={() => setView('local')} icon={<Target size={20} />} label="Foco" isDark={isDark} />
@@ -1633,7 +1695,6 @@ const App: React.FC = () => {
             <NavItem collapsed={isSidebarCollapsed} active={view === 'rewards'} onClick={() => setView('rewards')} icon={<Trophy size={20} />} label="Prêmios" isDark={isDark} />
           </div>
 
-          {/* BOTTOM: User Info + Points + Logout */}
           <div className="w-full space-y-4">
             {userAvatar && (
                <button 
@@ -1702,7 +1763,6 @@ const App: React.FC = () => {
         </div>
       </nav>
 
-      {/* Main Content (truncated as previous logic) */}
       <main className="flex-1 p-4 md:p-10 w-full max-w-[1400px] mx-auto pt-10">
         {view === 'global' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -1769,7 +1829,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* ... Rest of existing views (history, ranking, local, rewards) ... */}
         {view === 'history' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             <header className="mb-10">
@@ -1837,7 +1896,6 @@ const App: React.FC = () => {
             </header>
 
             <div className="space-y-6">
-              {/* Podium */}
               <div className="flex items-end justify-center gap-4 mb-12 min-h-[220px]">
                  {currentLeaderboard[1] && (
                     <div className="flex flex-col items-center animate-in slide-in-from-bottom-8 duration-700 delay-100">
@@ -1898,7 +1956,6 @@ const App: React.FC = () => {
                  )}
               </div>
 
-              {/* List */}
               <div className="space-y-3">
                  {currentLeaderboard.slice(3).map((user, index) => (
                     <div 
@@ -1953,7 +2010,6 @@ const App: React.FC = () => {
              </div>
              
              <div className={`grid grid-cols-1 ${isCompactMode ? 'lg:grid-cols-3' : ''} gap-6`}>
-               {/* Objective Header Window */}
                <div id="objective-header" className={`${isCompactMode ? 'lg:col-span-2' : ''} p-10 rounded-[3.5rem] shadow-xl border relative overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                   <div className="relative z-10 flex flex-col gap-6">
                      <div className="flex items-center">
@@ -1989,7 +2045,6 @@ const App: React.FC = () => {
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full -mr-20 -mt-20 blur-3xl pointer-events-none" />
                </div>
 
-               {/* Pomodoro Timer Window */}
                <div id="container-timer" className={`${isCompactMode ? 'lg:col-span-1' : ''} p-10 rounded-[3.5rem] shadow-xl border overflow-hidden transition-all duration-500 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-100'}`}>
                   <div className="flex flex-col items-center gap-8">
                      <div className="w-full flex justify-center items-center px-4 relative">
@@ -2027,7 +2082,6 @@ const App: React.FC = () => {
                </div>
              </div>
 
-             {/* Kanban Micro-Tasks Window */}
              <div className="space-y-6">
                 <div className="flex items-center justify-between px-4">
                    <h3 className="text-2xl font-black tracking-tight">Atividades</h3>
@@ -2097,12 +2151,10 @@ const App: React.FC = () => {
                                   {sub.notes && <p className="text-xs font-bold mb-3 line-clamp-3 leading-relaxed ml-6" style={{ color: '#a6a6a6' }}>{sub.notes}</p>}
                                   
                                   <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2 ml-6">
-                                     {/* Urgency Badge */}
                                      <div className={`flex items-center gap-1 text-[9px] font-black uppercase px-2 py-1 rounded-md ${urgencyInfo.bg} ${urgencyInfo.color}`}>
                                         <urgencyInfo.icon size={10} /> {urgencyInfo.label}
                                      </div>
 
-                                     {/* XP Badge */}
                                      <div className="flex items-center gap-1 text-[9px] font-black uppercase px-2 py-1 rounded-md bg-yellow-100 text-yellow-700">
                                         <Star size={10} /> +{sub.rewardPoints} XP
                                      </div>
@@ -2172,7 +2224,6 @@ const App: React.FC = () => {
                 </div>
              )}
 
-             {/* Historic Section */}
              <div className="col-span-full mt-10">
                 <div className="flex items-center gap-3 mb-6 px-4">
                    <Receipt size={24} className="text-slate-400" />
@@ -2310,33 +2361,17 @@ const App: React.FC = () => {
       )}
 
       {activeModal === 'macro' && (
-        <Modal title={editingTask ? "Editar objetivo" : "Defina seu objetivo"} onClose={() => { setActiveModal(null); setEditingTask(null); }} isDark={isDark}>
+        <Modal 
+          title={editingTask ? "Editar objetivo" : "Defina seu objetivo"} 
+          onClose={() => { setActiveModal(null); setEditingTask(null); }} 
+          isDark={isDark}
+          maxWidth={!isPro && tasks.length >= 1 && !editingTask ? "max-w-3xl" : "max-w-lg"}
+        >
            {!isPro && tasks.length >= 1 && !editingTask ? (
-             <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-4">
-                   <Lock size={40} />
-                </div>
-                <div>
-                   <h4 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-2">Limite Gratuito Atingido</h4>
-                   <p className="text-sm font-bold text-slate-500">Usuários gratuitos podem gerenciar apenas 1 objetivo macro por vez.</p>
-                </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-3">O que o plano PRO desbloqueia:</p>
-                   <ul className="text-left space-y-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Objetivos Ilimitados</li>
-                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Sub-tarefas Ilimitadas</li>
-                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Tag exclusiva PRO no ranking</li>
-                   </ul>
-                </div>
-                <a 
-                   href={STRIPE_LINK} 
-                   target="_blank" 
-                   rel="noreferrer"
-                   className="block w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-black text-base shadow-xl hover:scale-[1.02] transition-transform"
-                >
-                   Tornar-se PRO agora
-                </a>
-             </div>
+             <UpgradePlans 
+                title="Limite Gratuito Atingido" 
+                description="Usuários gratuitos podem gerenciar apenas 1 objetivo macro por vez. Escolha um plano para liberar seu potencial." 
+             />
            ) : (
              <div className="space-y-6">
                 <div className="space-y-1">
@@ -2349,7 +2384,6 @@ const App: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                    <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo final</label>
-                   {/* Changed to datetime-local for precise timing */}
                    <input type="datetime-local" value={newTaskDeadline} onChange={e => setNewTaskDeadline(e.target.value)} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
                 <button onClick={handleCreateMacro} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 active:scale-95 transition-all">
@@ -2361,32 +2395,17 @@ const App: React.FC = () => {
       )}
 
       {activeModal === 'subtask' && (
-        <Modal title={editingSubTask ? "Editar atividade" : "Adicionar atividade"} onClose={() => { setActiveModal(null); setEditingSubTask(null); }} isDark={isDark}>
+        <Modal 
+          title={editingSubTask ? "Editar atividade" : "Adicionar atividade"} 
+          onClose={() => { setActiveModal(null); setEditingSubTask(null); }} 
+          isDark={isDark}
+          maxWidth={(!isPro && activeTask && activeTask.subTasks.length >= 1 && !editingSubTask) ? "max-w-3xl" : "max-w-lg"}
+        >
            {(!isPro && activeTask && activeTask.subTasks.length >= 1 && !editingSubTask) ? (
-             <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-300">
-                <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-500 mb-4">
-                   <Lock size={40} />
-                </div>
-                <div>
-                   <h4 className="text-xl font-black text-slate-800 dark:text-slate-200 mb-2">Foco Máximo Atingido</h4>
-                   <p className="text-sm font-bold text-slate-500">Para manter o foco, o plano gratuito permite apenas 1 atividade simultânea por objetivo.</p>
-                </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-3">Libere seu potencial com o PRO:</p>
-                   <ul className="text-left space-y-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Adicione quantas tarefas precisar</li>
-                      <li className="flex items-center gap-2"><CheckCircle size={14} /> Gerencie múltiplos projetos</li>
-                   </ul>
-                </div>
-                <a 
-                   href={STRIPE_LINK} 
-                   target="_blank" 
-                   rel="noreferrer"
-                   className="block w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-black text-base shadow-xl hover:scale-[1.02] transition-transform"
-                >
-                   Desbloquear Tudo
-                </a>
-             </div>
+             <UpgradePlans 
+                title="Limite Gratuito Atingido" 
+                description="O plano gratuito permite 1 atividade simultânea para manter seu foco. Evolua para um plano avançado e domine sua rotina." 
+             />
            ) : (
              <div className="space-y-6">
                 <div className="space-y-1">
@@ -2421,7 +2440,6 @@ const App: React.FC = () => {
                 
                 <div className="space-y-1">
                    <label className="text-[10px] font-black uppercase text-slate-500 ml-4">Prazo (Opcional)</label>
-                   {/* Changed to datetime-local for precise timing */}
                    <input type="datetime-local" value={newSubTask.dueDate} onChange={e => setNewSubTask({...newSubTask, dueDate: e.target.value})} className={`w-full p-5 border-2 rounded-3xl font-bold text-base outline-none focus:border-indigo-600 transition-all ${isDark ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`} />
                 </div>
 
